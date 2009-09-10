@@ -5,12 +5,19 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "appstore"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
-    gem.email = "alex@evri.com"
+    gem.summary = %Q{Get your iTunes Connect Reports}
+    gem.description = %Q{Programmatic and command-line access to iTunes Connect Reports}
+    gem.email = "alex.vollmer@gmail.com"
     gem.homepage = "http://github.com/alexvollmer/appstore"
     gem.authors = ["Alex Vollmer"]
+    gem.files = FileList["lib/**/*.rb", "bin/*", "spec/**/*"]
+
+    gem.add_dependency "httpclient", "~>2.1"
+    gem.add_dependency "nokogiri", "~>1.3"
+    gem.add_dependency "clip", ">=1.0.1"
+
     gem.add_development_dependency "rspec"
+    gem.add_development_dependency "fakeweb"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
 rescue LoadError

@@ -1,0 +1,365 @@
+HTTP/1.1 200 Apple
+Date: Tue, 25 Aug 2009 18:19:18 GMT
+Server: Apache/1.3.33 (Darwin) mod_ssl/2.8.24 OpenSSL/0.9.7l
+Cache-Control: max-age=60
+Expires: Tue, 25 Aug 2009 18:20:18 GMT
+cache-control: private
+cache-control: no-cache
+cache-control: no-store
+cache-control: must-revalidate
+cache-control: max-age=0
+expires: Tue, 25-Aug-2009 16:36:29 GMT
+pragma: no-cache
+content-length: 11640
+Keep-Alive: timeout=15, max=100
+Connection: Keep-Alive
+Content-Type: text/html
+
+<html>
+     <head>
+		<title>Piano-Sign In</title>
+
+			<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+			<meta name="Author" content="Apple Computer, Inc.">
+
+				<link rel="home" href="http://www.apple.com/">
+				<link rel="index" href="http://www.apple.com/find/sitemap.html">
+
+
+
+	<script language="JavaScript">
+
+	function browserAlert() 
+	{	
+		//alert(navigator.userAgent);
+		//alert(document.getElementById("checkAlrt").value);
+
+		var alertMessage ="The browser you are using is not supported by this application. The application may not work as expected. Supported browsers are:- Safari 2 and above in Mac & IE 6.0 and above in Windows & Firefox 2 and above in both Mac and Windows";
+		if(document.getElementById("checkAlrt").value!="Message Displayed")
+		{
+			
+			var browserType = navigator.userAgent;
+			var s = browserType.length;
+			var i = browserType.lastIndexOf("/")+1;
+			//alert("Split :::::" + navigator.userAgent.split("/"));
+			tempVersion = navigator.userAgent.split("/");
+			//alert(tempVersion[3]); 
+			var iSafari = browserType.indexOf("Safari");
+			var iNetscape = browserType.indexOf("Netscape");
+			var iFirefox = browserType.indexOf("Firefox");
+			var iIE = browserType.indexOf("IE");
+			var iMac = browserType.indexOf("Mac");
+			var iOpera = browserType.indexOf("Opera");
+
+			
+			if(iSafari < 0 && iFirefox < 0 && iIE < 0 )
+			{
+				alert(alertMessage);
+			}
+			
+			else 
+			{
+				  
+				if(iSafari > -1)
+				{
+					if(browserType.substring(s,i) < 412)
+					{
+						alert(alertMessage);
+					}
+				}
+
+
+				if(iFirefox > -1)
+				{
+					if(browserType.substring(i,s) < 2.0)
+					{
+						alert(alertMessage);
+					}
+				}
+				
+
+				if(iIE > -1)
+				{
+					temp=navigator.userAgent.split("MSIE")
+					version=parseFloat(temp[1])
+					//alert(version);
+					if(version < 6.0 || iMac > 1)
+					{
+						alert(alertMessage);
+					}
+				}
+			
+			}
+		}
+	}
+
+
+
+</script>
+
+
+</head>
+<body onLoad="browserAlert()">
+
+			<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+     <head>
+		<title>Piano-Sign In</title>
+		<meta name="vs_targetSchema" content="http://schemas.microsoft.com/intellisense/ie5">
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<meta http-equiv="pics-label" content='(pics-1.1 "http://www.icra.org/ratingsv02.html" l gen true for "http://www.apple.com" r (cz 1 lz 1 nz 1 oz 1 vz 1) "http://www.rsac.org/ratingsv01.html" l gen true for "http://www.apple.com" r (n 0 s 0 v 0 l 0))'>
+		<meta http-equiv="Expires" content="Fri, 26 Mar 1999 23:59:59 GMT">
+		<meta name="Author" content="Apple Computer, Inc.">
+
+		<link rel="home" href="http://www.apple.com/">
+		<link rel="index" href="http://www.apple.com/find/sitemap.html">
+
+	
+			<link rel="stylesheet" type="text/css" href="/WebObjects/piano.woa/Contents/WebServerResources/index.css" media="screen">
+			<link rel="stylesheet" type="text/css" href="/WebObjects/piano.woa/Contents/WebServerResources/global.css" media="screen">
+			<link rel="stylesheet" type="text/css" href="/WebObjects/piano.woa/Contents/WebServerResources/fonts.css" media="screen">
+			<link rel="stylesheet" type="text/css" href="/WebObjects/piano.woa/Contents/WebServerResources/Pianonav.css" media="screen">
+			<link rel="stylesheet" type="text/css" href="/WebObjects/piano.woa/Contents/WebServerResources/job.css" media="screen">
+			<link rel="stylesheet" type="text/css" href="/WebObjects/piano.woa/Contents/WebServerResources/build.css" media="print">
+
+<SCRIPT LANGUAGE="javascript">
+
+appleOver = new Image()
+appleOver.src = "/WebObjects/piano.woa/Contents/WebServerResources/Images_Header/AppleOr.png"
+
+storeOver = new Image()
+storeOver.src = "/WebObjects/piano.woa/Contents/WebServerResources/Images_Header/StoreOr.png"
+
+macOver = new Image()
+macOver.src = "/WebObjects/piano.woa/Contents/WebServerResources/Images_Header/MacOr.png" 
+
+tunesOver = new Image()
+tunesOver.src = "/WebObjects/piano.woa/Contents/WebServerResources/Images_Header/TunesOr.png"
+
+phoneOver = new Image()
+phoneOver.src = "/WebObjects/piano.woa/Contents/WebServerResources/Images_Header/PhoneOr.png"
+
+downloadOver = new Image()
+downloadOver.src = "/WebObjects/piano.woa/Contents/WebServerResources/Images_Header/DownloadOr.png" 
+
+supportOver = new Image()
+supportOver.src = "/WebObjects/piano.woa/Contents/WebServerResources/Images_Header/SupportOr.png" 
+
+originalOver = new Image()
+originalOver.src = "/WebObjects/piano.woa/Contents/WebServerResources/Images_Header/TunesOr.png" 
+
+
+
+
+function original() {
+document.emp.src = originalOver.src; return true;
+}
+
+
+function apple() {
+document.emp.src = appleOver.src; return true;
+}
+
+function store() {
+document.emp.src = storeOver.src; return true;
+}
+
+function mac() {
+document.emp.src = macOver.src; return true; 
+}
+
+function tunes() {
+document.emp.src = tunesOver.src; return true;
+}
+
+function phone() {
+document.emp.src = phoneOver.src; return true; 
+}
+
+function download() {
+document.emp.src = downloadOver.src; return true; 
+}
+
+function support() {
+document.emp.src = supportOver.src; return true; 
+}
+
+
+</SCRIPT>
+
+
+</head>
+    <body marginwidth=0 marginheight=0 topmargin=0 leftmargin=0 bgcolor="#FFFFFF" background="">
+
+<br>
+<IMG NAME="emp" SRC="/WebObjects/piano.woa/Contents/WebServerResources/Images_Header/TunesOr.png" USEMAP="#map1" border = 0>
+
+
+
+<MAP NAME="map1">
+
+<AREA
+   HREF="http://www.apple.com/" ALT="Apple" TITLE="Apple"
+   SHAPE=RECT COORDS="0,0,116,190" onMouseOver="apple()" onMouseOut="original()" onClick= "appleMouseClick()">
+<AREA
+   HREF="http://store.apple.com/" ALT="Store" TITLE="Store"
+   SHAPE=RECT COORDS="0,0,233,190" onMouseOver="store()" onMouseOut="original()" onClick= "zoomout1()">
+<AREA
+   HREF="http://www.apple.com/mac/" ALT="Mac" TITLE="Mac"
+   SHAPE=RECT COORDS="0,0,348,190" onMouseOver="mac()" onMouseOut="original()" onClick= "zoomout()">
+<AREA
+   HREF="http://www.apple.com/itunes/" ALT="iTunes" TITLE="iTunes"
+   SHAPE=RECT COORDS="0,0,465,190" onMouseOver="tunes()" onMouseOut="original()" onClick= "zoomout()">
+
+<AREA
+   HREF="http://www.apple.com/iphone/" ALT="iPhone" TITLE="iPhone"
+   SHAPE=RECT COORDS="0,0,583,190" onMouseOver="phone()" onMouseOut="original()" onClick= "zoomout()">
+
+<AREA
+   HREF="http://www.apple.com/downloads/" ALT="Downloads" TITLE="Downloads"
+   SHAPE=RECT COORDS="0,0,699,190" onMouseOver="download()" onMouseOut="original()" onClick= "zoomout()">
+
+<AREA
+   HREF="http://www.apple.com/support/" ALT="Support" TITLE="Support"
+   SHAPE=RECT COORDS="0,0,817,190" onMouseOver="support()" onMouseOut="original()" onClick= "zoomout()"></MAP>
+</body>
+</html>
+
+
+
+
+<input Id="checkAlrt" type="hidden" name="2" />
+			<form method="post" action="/cgi-bin/WebObjects/Piano.woa/2/wo/9tkH3ucxG921Y1uBDoPAIM/0.4">
+			<br>
+			<table>
+			<tr>
+				<td class="cellLeft">
+				<h2><p align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img src="https://phobos.apple.com/images/labelconnect/txt_title_itunesvips.gif" alt="iTunes VIPs" border="0"></p></h2>
+				<font size = 2 color = "red"><p align = "center"> </p></font><br>
+				<div id="main"><table cellspacing="0" cellpadding="1" width="100%" border="0">
+				<tr>
+					<td></td>
+					<td align="rignt">
+						<div id="jobHeader">Sign In</div></td></tr><tr><td valign="top" width="50%"><hr><br><font size=2.5><b>Welcome!</b></font><font size=2>This site will allow you to view and/or download daily and weekly iTunes sales data. <br><br>If you have any issues, please contact us by email at &nbsp;</font><font size=2.5><b><a href= mailto:itunesondemand@apple.com>itunesondemand@apple.com<br><br></a></b><p>Please note:    The information you are accessing on this site is market trend reports, and should not be considered to be your monthly royalty reports.<br></p><font><p></p><hr></td><td valign="top">
+						<div id="DSSecurityList">
+				<table>
+					<tr>
+						<td colspan="3">
+							<font size="1" color=red><a href="/cgi-bin/WebObjects/Piano.woa/2/wo/9tkH3ucxG921Y1uBDoPAIM/0.4.18"></a></font>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3">
+							
+						<script>
+	function dsfocus(){ document.appleConnectForm.theAccountName.focus(); }
+</script>
+
+
+	
+		
+<!-- This FORM is embedded inside another FORM. Omitting Open Tag -->
+
+	<div id="ds_container">
+		
+		
+
+		
+			
+			
+			
+			
+			
+				<font face="Lucida Grande, Geneva, Verdana, Arial, Helvetica, sans-serif" CLASS="L12" />
+				<font size=2>
+					<span class="dstext">Please enter your Apple ID and password.</span>
+				</font>
+				</font /><br><br>
+			
+			
+			
+			
+			
+			
+			
+				
+				
+				
+				<table cellpadding=0 cellspacing=0 border=0 width=273>
+					<tr valign=top>
+						<td align=left><font size=2><font face="Geneva, Verdana, Arial, Helvetica, sans-serif" SIZE=1 CLASS="G10" />
+							<label for="accountname"><span class="dslabel">Apple ID</span></label>
+							<font color="#ff1102"></font></font /><br>
+							<font size='2'><input size="30" maxlength="128" id="accountname" type="text" name="theAccountName" /></font></font>
+							
+						</td>
+					</tr>
+					<tr><td><img alt="" width="273" height="5" src="/AppleConnect/US-EN/spacer.gif" /></td></tr>
+					<tr><td><img alt="" width="273" height="5" src="/AppleConnect/US-EN/spacer.gif" /></td></tr>
+					<tr>
+						<td align='left'>
+							<font face="Geneva, Verdana, Arial, Helvetica, sans-serif" SIZE=1 CLASS="G10" />
+								<label for="accountpassword"><span class="dslabel">Password</span></label>
+							</font />
+							<br>
+							<input size="30" maxlength="32" id="accountpassword" type="password" name="theAccountPW" /><input border="0" width="0" height="0" type="image" name="1.Continue" src="/AppleConnect/US-EN/spacer.gif" />
+						</td>
+					</tr>
+					<tr><td><img alt="" width="273" height="5" src="/AppleConnect/US-EN/spacer.gif" /></td></tr>
+					<tr><td><img alt="" width="273" height="5" src="/AppleConnect/US-EN/spacer.gif" /></td></tr>
+					<tr>
+						<td>
+							<table cellspacing='0' border='0' width='273' cellpadding='0'>
+								<tr align='left'>
+									<td align='left' width='170'>
+										
+
+										
+											<font size='1'>
+												<span class="dstext">
+													
+
+													
+														
+														
+															
+															<input border="0" alt="Did you forget your password?" type="image" name="1.Forgot" src="/AppleConnect/US-EN/forgotpasswdlink.gif" />
+														
+													
+												</span>
+											</font>
+										
+									</td>
+									<td width='15'><img alt="" width="15" height="5" src="/AppleConnect/US-EN/spacer.gif" /></td>
+									<td align='left' width='88'><input border="0" alt="Sign In" type="image" name="1.Continue" src="/AppleConnect/US-EN/buttonloginlime.gif" /></td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				</table>
+			
+			
+			
+		
+			
+		<input type="hidden" name="theAuxValue" />
+	</div>
+<input type="hidden" name="wosid" value="9tkH3ucxG921Y1uBDoPAIM" />
+<!-- This FORM is embedded inside another FORM. Omitting Close Tag -->
+
+	
+	
+	
+	
+	
+
+
+
+<p></p><br><br></td>
+					</tr>
+				</table>
+</td></tr></table></div><div class="sidebar"></div><div class="clear"></div><input type="hidden" name="wosid" value="9tkH3ucxG921Y1uBDoPAIM" /></form><br> <div class="footerLinks" align="center"><a href="/cgi-bin/WebObjects/Piano.woa/2/wo/9tkH3ucxG921Y1uBDoPAIM/0.6.1">Home</a> <!--| <a href="/cgi-bin/WebObjects/Piano.woa/2/wo/9tkH3ucxG921Y1uBDoPAIM/0.6.3">FAQs</a> -->| <a href="/cgi-bin/WebObjects/Piano.woa/2/wo/9tkH3ucxG921Y1uBDoPAIM/0.6.5">Sign Out</a></div>
+ <div class="footerCopyright" align="center">Copyright &#169; 2008 Apple Inc. All rights reserved. </div><br/>
+   </body>
+</html>

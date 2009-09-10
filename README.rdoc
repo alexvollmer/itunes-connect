@@ -1,6 +1,22 @@
-= appstore
+= itunes-connect
 
-Description goes here.
+This gem provides a very simple command-line utility and backing
+"library" (if I can be so bold to use the term in this context) for
+accessing sales reports from Apple's iTunes Connect website.
+
+== Usage
+
+=== Command-Line Usage
+
+This gem comes with the <tt>itunes_connect</tt> executable which will
+retrieve a report from the ITC site and dump it to standard out. You
+may specify your iTunes Connect credentials on the command line _or_
+you can put them in YAML format in <tt>~/.itunesrc</tt> with the keys
+of <tt>:username</tt> and <tt>:password</tt>.
+
+=== API Usage
+
+See the docs on the <tt>AppStore::Connect</tt> class for details.
 
 == Note on Patches/Pull Requests
  
