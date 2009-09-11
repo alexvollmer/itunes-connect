@@ -6,15 +6,25 @@ module AppStore
     def initialize(file)
       @db = SQLite3::Database.new(file)
       if @db.table_info("reports").empty?
-        @db.execute("CREATE TABLE reports (id INTEGER PRIMARY KEY, report_date DATE, country TEXT, install_count INTEGER, update_count INTEGER)")
-        # TODO: add indexes
+        @db.execute("CREATE TABLE reports (id INTEGER PRIMARY KEY, " +
+                    "report_date DATE, country TEXT, install_count INTEGER, " +
+                    "update_count INTEGER)")
+        @db.execute("CREATE UNIQUE INDEX u_reports_idx ON reports " +
+                    "(report_date, country)")
       end
     end
 
     def add(date, country, install_count, update_count)
-      # TODO: need to check for existing rows and not clobber
-      @db.execute("INSERT INTO reports (report_date, country, install_count, update_count) VALUES (?, ?, ?, ?)",
+      @db.execute("INSERT INTO reports (report_date, country, " +
+                  "install_count, update_count) VALUES (?, ?, ?, ?)",
                   date, country, install_count, update_count)
+      true
+    rescue SQLite3::SQLException => e
+      if e.message =~ /columns .* are not unique/
+        false
+      else
+        raise e
+      end
     end
 
     VALID_COUNT_OPTIONS = [:from, :to, :country]
