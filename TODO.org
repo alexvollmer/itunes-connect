@@ -1,0 +1,9 @@
+* Command-line Executable
+** TODO Change itunes_connect to appstore
+** TODO Create subcommands
+*** download
+Retrieves the report from iTunes Connect
+*** import
+Parses a given report and imports into the database
+*** report
+Dumps a report from the database

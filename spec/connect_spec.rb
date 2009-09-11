@@ -8,12 +8,19 @@ describe AppStore::Connect do
   end
   
   it 'should reject invalid periods' do
-    lambda { @itc.get_report(Date.today - 1, "Invalid") }.should raise_error(ArgumentError)
+    lambda {
+      @itc.get_report(Date.today - 1, $stdout, "Invalid")
+    }.should raise_error(ArgumentError)
   end
 
   it 'should reject dates newer than yesterday' do
-    lambda { @itc.get_report(Date.today) }.should raise_error(ArgumentError)
-    lambda { @itc.get_report(Date.today + 1) }.should raise_error(ArgumentError)
+    lambda {
+      @itc.get_report(Date.today, $stdout)
+    }.should raise_error(ArgumentError)
+
+    lambda {
+      @itc.get_report(Date.today + 1, $stdout)
+    }.should raise_error(ArgumentError)
   end
   
 end

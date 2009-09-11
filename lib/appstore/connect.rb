@@ -35,7 +35,7 @@ module AppStore
     # Any dates given that equal the current date or newer will cause
     # this method to raise an <tt>ArgumentError</tt>.
     # 
-    def get_report(date=Date.today - 1, period='Daily')
+    def get_report(date, out, period='Daily')
       if date >= Date.today
         raise ArgumentError, "You must specify a date before today"
       end
@@ -86,7 +86,7 @@ module AppStore
                            })
 
       gunzip = Zlib::GzipReader.new(StringIO.new(report))
-      gunzip.read
+      out << gunzip.read
     end
 
     private 
