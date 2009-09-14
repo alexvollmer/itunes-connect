@@ -42,25 +42,24 @@ module AppStore
       params = []
       clauses = []
       sql = "SELECT * FROM reports"
-      unless opts.empty?
-        if opts[:from]
-          clauses << "report_date >= ?"
-          params << opts[:from]
-        end
 
-        if opts[:to]
-          clauses << "report_date <= ?"
-          params << opts[:to]
-        end
-
-        if opts[:country]
-          clauses << "country = ?"
-          params << opts[:country]
-        end
-
-        sql << " WHERE "
-        sql << clauses.join(" AND ")
+      if opts[:from]
+        clauses << "report_date >= ?"
+        params << opts[:from]
       end
+
+      if opts[:to]
+        clauses << "report_date <= ?"
+        params << opts[:to]
+      end
+
+      if opts[:country]
+        clauses << "country = ?"
+        params << opts[:country]
+      end
+
+      sql << " WHERE " unless clauses.empty?
+      sql << clauses.join(" AND ") unless params.empty?
 
       @db.execute(sql, *params).map do |row|
         OpenStruct.new({

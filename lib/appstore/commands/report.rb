@@ -4,6 +4,8 @@ module AppStore::Commands
   class Report
     def initialize(c)
       c.req('b', 'db', :desc => 'Dump report to sqlite DB at the given path')
+      c.opt('c', 'country',
+            :desc => 'A two-letter country code to filter results with')
       c.opt('f', 'from', :desc => 'The starting date, inclusive') do |f|
         Date.parse(f)
       end

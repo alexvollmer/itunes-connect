@@ -91,6 +91,9 @@ describe AppStore::Commands do
           with('b', 'db',
                :desc => 'Dump report to sqlite DB at the given path')
         @clip.should_receive(:opt).
+          with('c', 'country',
+               :desc => 'A two-letter country code to filter results with')
+        @clip.should_receive(:opt).
           with('f', 'from',
                :desc => 'The starting date, inclusive')
         @clip.should_receive(:opt).
