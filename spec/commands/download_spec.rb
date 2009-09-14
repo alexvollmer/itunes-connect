@@ -38,6 +38,26 @@ describe AppStore::Commands::Download do
       opts = stub(@defaults.merge(:out => '/tmp/foobar'))
       @cmd.execute!(opts)
     end
+
+    describe 'and the :db option is specified' do
+      it 'should import the results into the DB' do
+        t = Date.parse('8/31/2009')
+        @connect.should_receive(:get_report) do |date, io|
+          io << read_fixture('fixtures/report.txt')
+        end
+
+        store = mock(AppStore::Store)
+        store.should_receive(:add).with('2009/08/31', 'US', 3, 1)
+        store.should_receive(:add).with('2009/08/31', 'GB', 1, nil)
+        store.should_receive(:add).with('2009/08/31', 'AR', 1, nil)
+        AppStore::Store.should_receive(:new).
+          with('/tmp/foobar.db').
+          and_return(store)
+
+        opts = stub(@defaults.merge(:db => '/tmp/foobar.db', :date => '2009/08/31'))
+        @cmd.execute!(opts)
+      end
+    end
   end
 
   describe 'checking execution arguments' do
@@ -50,4 +70,13 @@ describe AppStore::Commands::Download do
         should raise_error(ArgumentError)
     end
   end
+
+  it 'should reject getting both :out and :db options' do
+    lambda do
+      opts = stub(@defaults.merge(:db => '/tmp/foobar.db',
+                                  :out => '/tmp/foobar.txt'))
+      @cmd.execute!(opts)
+    end.should raise_error(ArgumentError)
+  end
+
 end

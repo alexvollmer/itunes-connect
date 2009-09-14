@@ -1,0 +1,5 @@
+Provider	Provider Country	Vendor Identifier	UPC	ISRC	Artist / Show	Title / Episode / Season	Label/Studio/Network	Product Type Identifier	Units	Royalty Price	Begin Date	End Date	Customer Currency	Country Code	Royalty Currency	Preorder	Season Pass	ISAN	Apple Identifier	Customer Price	CMA	Asset/Content Flavor	Vendor Offer Code	Grid	Promo Code	Parent Identifier
+APPLE	US	1234	 	 	Evri	EvriVerse	 	1	1	0	08/31/2009	08/31/2009	USD	US	USD	 	 	 	312716560	0	 	 	 	 	 	 
+APPLE	US	1234	 	 	Evri	EvriVerse	 	7	3	0	08/31/2009	08/31/2009	USD	US	USD	 	 	 	312716560	0	 	 	 	 	 	 
+APPLE	US	1234	 	 	Evri	EvriVerse	 	7	1	0	08/31/2009	08/31/2009	GBP	GB	GBP	 	 	 	312716560	0	 	 	 	 	 	 
+APPLE	US	1234	 	 	Evri	EvriVerse	 	7	1	0	08/31/2009	08/31/2009	USD	AR	USD	 	 	 	312716560	0	 	 	 	 	 	 

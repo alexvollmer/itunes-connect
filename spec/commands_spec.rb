@@ -64,6 +64,9 @@ describe AppStore::Commands do
         @clip.should_receive(:opt).
           with('o', 'out',
                :desc => 'Dump report to file, - is stdout')
+        @clip.should_receive(:opt).
+          with('b', 'db',
+               :desc => 'Dump report to sqlite DB at the given path')
 
         AppStore::Commands::Download.new(@clip)
       end
