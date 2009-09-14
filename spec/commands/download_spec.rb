@@ -2,7 +2,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe AppStore::Commands::Download do
   before(:each) do
-    @cmd = AppStore::Commands::Download.new(mock(:null_object => true))
+    @cmd = AppStore::Commands::Download.new(mock(:null_object => true), '/tmp/foo')
     @defaults = {
       :username => 'dudeman',
       :password => 'sekret',
