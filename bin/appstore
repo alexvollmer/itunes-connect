@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+
+require "appstore"
+require "clip"
+
+AppStore::Commands.usage("No command given") if ARGV.empty?
+
+command_name = ARGV.shift
+cli = Clip::Parser.new
+cli.flag('v', 'verbose', :desc => 'Make output more verbose')
+command = AppStore::Commands.for_name(command_name, cli)
+AppStore::Commands.usage("Unrecognized command '#{command_name}'") if command.nil?
+
+begin
+  cli.parse(ARGV)
+  if cli.valid?
+    command.execute!(cli, cli.remainder)
+  else
+    $stderr.puts(cli)
+    $stderr.puts(cli.help)
+  end
+rescue => e
+  $stderr.puts(e.message)
+  $stderr.puts e.backtrace.join("\n") if cli.verbose?
+end

@@ -22,7 +22,8 @@ describe AppStore::Commands::Report do
     
     it 'should requests counts with no options with no qualifiers' do
       @store.should_receive(:counts).and_return(@data)
-      @cmd.execute!(:db => '/tmp/store.db', :out => @io)
+      clip = stub(:db => '/tmp/store.db', :null_object => true)
+      @cmd.execute!(clip, [], @io)
       @io.string.should == "2009-09-09\tUSD\t1\t2\n" +
         "2009-09-09\tGBP\t3\t4\n"
     end
@@ -34,12 +35,12 @@ describe AppStore::Commands::Report do
              :country => 'USD').
         and_return(@data)
 
-      @cmd.execute!(:db => '/tmp/store.db',
-                    :out => @io,
-                    :to => Date.parse('2009/09/09'),
-                    :from => Date.parse('2009/09/01'),
-                    :country => 'USD')
+      clip = stub(:db => '/tmp/store.db',
+                  :to => Date.parse('2009/09/09'),
+                  :from => Date.parse('2009/09/01'),
+                  :country => 'USD')
 
+      @cmd.execute!(clip, [], @io)
       @io.string.should == "2009-09-09\tUSD\t1\t2\n" +
         "2009-09-09\tGBP\t3\t4\n"
     end

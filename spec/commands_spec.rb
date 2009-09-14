@@ -2,6 +2,17 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 describe AppStore::Commands do
 
+  describe 'all' do
+    it 'should return all available command' do
+      AppStore::Commands.all.should == [
+                                        AppStore::Commands::Download,
+                                        AppStore::Commands::Import,
+                                        AppStore::Commands::Report,
+                                        AppStore::Commands::Help
+                                       ]
+    end
+  end
+
   describe 'for_name' do
     before(:each) do
       @clip = mock(:null_object => true)
@@ -21,6 +32,12 @@ describe AppStore::Commands do
       AppStore::Commands.for_name('report', @clip).
         should be_kind_of(AppStore::Commands::Report)
     end
+
+    it 'should return Help for help' do
+      AppStore::Commands.for_name('help', @clip).
+        should be_kind_of(AppStore::Commands::Help)
+    end
+    
 
     it 'should return nil for other names' do
       AppStore::Commands.for_name('foobar', @clip).should be_nil

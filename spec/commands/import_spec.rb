@@ -24,15 +24,21 @@ describe AppStore::Commands::Import do
              ]
       @store.should_receive(:add).with(t, 'USD', 1, 2)
       @store.should_receive(:add).with(t, 'GBP', 3, 4)
-      @cmd.execute!(:db => '/tmp/store.db', :data => data)
+      @cmd.execute!(stub(:db => '/tmp/store.db', :data => data))
     end
   end
 
   describe 'execution argument validation' do
     it 'should reject missing options' do
       lambda { @cmd.execute! }.should raise_error(ArgumentError)
-      lambda { @cmd.execute!(:db => '/tmp/store.db') }.should raise_error(ArgumentError)
-      lambda { @cmd.execute!(:data => []) }.should raise_error(ArgumentError)
+      lambda {
+        @cmd.execute!(stub(:db => '/tmp/store.db',
+                           :data => nil))
+      }.should raise_error(ArgumentError)
+      
+      lambda {
+        @cmd.execute!(stub(:data => [], :db => nil))
+      }.should raise_error(ArgumentError)
     end
   end
 
