@@ -36,6 +36,7 @@ module AppStore
     # this method to raise an <tt>ArgumentError</tt>.
     # 
     def get_report(date, out, period='Daily')
+      date = Date.parse(date) if String === date
       if date >= Date.today
         raise ArgumentError, "You must specify a date before today"
       end

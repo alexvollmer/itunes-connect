@@ -1,4 +1,5 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require "tempfile"
 
 describe AppStore::Commands::Import do
 
@@ -15,30 +16,30 @@ describe AppStore::Commands::Import do
     end
     
     it 'should add a record to the store for each row of data' do
-      t = Date.today
-      data = [
-              mock(:date => t, :country => 'USD',
-                   :install_count => 1, :update_count => 2),
-              mock(:date => t, :country => 'GBP',
-                   :install_count => 3, :update_count => 4)
-             ]
-      @store.should_receive(:add).with(t, 'USD', 1, 2)
-      @store.should_receive(:add).with(t, 'GBP', 3, 4)
-      @cmd.execute!(stub(:db => '/tmp/store.db', :data => data))
+      t = Date.parse('8/31/2009')
+      @store.should_receive(:add).with(t, 'GB', 0, 1)
+      @store.should_receive(:add).with(t, 'AR', 0, 1)
+      @store.should_receive(:add).with(t, 'US', 1, 3)
+      report_file = File.join(File.dirname(__FILE__), '..', 'fixtures', 'report.txt')
+      @cmd.execute!(stub(:db => '/tmp/store.db', :file => report_file))
     end
   end
 
   describe 'execution argument validation' do
-    it 'should reject missing options' do
+    it 'should reject missing all options' do
       lambda { @cmd.execute! }.should raise_error(ArgumentError)
-      lambda {
-        @cmd.execute!(stub(:db => '/tmp/store.db',
-                           :data => nil))
-      }.should raise_error(ArgumentError)
-      
-      lambda {
-        @cmd.execute!(stub(:data => [], :db => nil))
-      }.should raise_error(ArgumentError)
+    end
+    
+    it 'should reject missing :file option' do
+      lambda do
+        @cmd.execute!(stub(:db => '/tmp/store.db', :file => nil))
+      end.should raise_error(ArgumentError)
+    end
+
+    it 'should reject missing :db option' do
+      lambda do
+        @cmd.execute!(stub(:file => '/tmp/report.txt', :db => nil))
+      end.should raise_error(ArgumentError)
     end
   end
 

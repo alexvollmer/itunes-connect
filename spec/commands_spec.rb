@@ -77,6 +77,9 @@ describe AppStore::Commands do
         @clip.should_receive(:req).
           with('b', 'db',
                :desc => 'Dump report to sqlite DB at the given path')
+        @clip.should_receive(:req).
+          with('f', 'file',
+               :desc => 'The file to import, - means standard in')
 
         AppStore::Commands::Import.new(@clip)
       end

@@ -44,17 +44,19 @@ describe AppStore::Commands::Download do
         t = Date.parse('8/31/2009')
         @connect.should_receive(:get_report) do |date, io|
           io << read_fixture('fixtures/report.txt')
+          io.flush
         end
 
         store = mock(AppStore::Store)
-        store.should_receive(:add).with('2009/08/31', 'US', 3, 1)
-        store.should_receive(:add).with('2009/08/31', 'GB', 1, nil)
-        store.should_receive(:add).with('2009/08/31', 'AR', 1, nil)
+        store.should_receive(:add).with(t, 'GB', 0, 1)
+        store.should_receive(:add).with(t, 'AR', 0, 1)
+        store.should_receive(:add).with(t, 'US', 1, 3)
         AppStore::Store.should_receive(:new).
           with('/tmp/foobar.db').
           and_return(store)
 
-        opts = stub(@defaults.merge(:db => '/tmp/foobar.db', :date => '2009/08/31'))
+        opts = stub(@defaults.merge(:db => '/tmp/foobar.db',
+                                    :date => '2009/08/31'))
         @cmd.execute!(opts)
       end
     end

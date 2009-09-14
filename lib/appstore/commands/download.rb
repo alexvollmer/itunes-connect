@@ -1,3 +1,5 @@
+require "appstore/report"
+
 module AppStore::Commands
   class Download
     def initialize(c)
@@ -24,25 +26,14 @@ module AppStore::Commands
       connect.get_report(opts.date || Date.today - 1, out)
 
       if opts.db and StringIO === out
-        data = Hash.new { |h,k| h[k] = { }}
-        out.string.lines.to_a[1..-1].each do |line|
-          tokens = line.split("\t")
-          country = tokens[14]
-          count = tokens[9].to_i
-          case tokens[8].to_i
-          when 7
-            data[country][:upgrade] = count
-          when 1
-            data[country][:install] = count
-          end
-        end
-
         store = AppStore::Store.new(opts.db)
-        data.each do |country, data|
-          import_count += 1 if store.add(opts.date,
-                                         country,
-                                         data[:upgrade],
-                                         data[:install])
+        out.rewind
+        report = AppStore::Report.new(out)
+        report.each do |entry|
+          store.add(entry.date,
+                    entry.country,
+                    entry.install_count,
+                    entry.upgrade_count)
         end
       end
 
