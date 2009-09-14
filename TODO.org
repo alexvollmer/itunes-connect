@@ -8,5 +8,5 @@ Parses a given report and imports into the database
 *** report
 Dumps a report from the database
 
-** TODO Update documentation
+** DONE Update documentation
 ** TODO Update gem dependencies
