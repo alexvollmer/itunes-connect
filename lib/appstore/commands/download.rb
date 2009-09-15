@@ -41,13 +41,13 @@ module AppStore::Commands
                                 "associated with them")
       end
 
-      connect = AppStore::Connect.new(username, password, opts.verbose?)
+      connection = AppStore::Connection.new(username, password, opts.verbose?)
       out = if opts.out.nil?
               opts.db ? StringIO.new : $stdout
             else
               opts.out == "-" ? $stdout : File.open(opts.out, "w")
             end
-      connect.get_report(opts.date || Date.today - 1, out, opts.report)
+      connection.get_report(opts.date || Date.today - 1, out, opts.report)
 
       if opts.db and StringIO === out
         store = AppStore::Store.new(opts.db, opts.verbose?)

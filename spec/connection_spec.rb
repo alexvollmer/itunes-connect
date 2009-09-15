@@ -1,9 +1,9 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 require "fakeweb"
 
-describe AppStore::Connect do
+describe AppStore::Connection do
   before(:each) do
-    @itc = AppStore::Connect.new("foo", "bar")
+    @itc = AppStore::Connection.new("foo", "bar")
     FakeWeb.allow_net_connect = false
   end
   

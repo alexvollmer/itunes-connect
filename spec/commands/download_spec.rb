@@ -16,27 +16,27 @@ describe AppStore::Commands::Download do
   
   describe 'with valid execution arguments' do
     before(:each) do
-      @connect = mock(AppStore::Connect)
-      AppStore::Connect.should_receive(:new).
+      @connection = mock(AppStore::Connection)
+      AppStore::Connection.should_receive(:new).
         with('dudeman', 'sekret', false).
-        and_return(@connect)
+        and_return(@connection)
     end
 
     it 'should call get_report correctly with no args' do
-      @connect.should_receive(:get_report).with(Date.today - 1, $stdout, 'Daily')
+      @connection.should_receive(:get_report).with(Date.today - 1, $stdout, 'Daily')
       opts = stub(@defaults)
       @cmd.execute!(opts)
     end
 
     it 'should call get_report with date argument when given' do
       today = Date.today - 15
-      @connect.should_receive(:get_report).with(today, $stdout, 'Daily')
+      @connection.should_receive(:get_report).with(today, $stdout, 'Daily')
       opts = stub(@defaults.merge(:date => today))
       @cmd.execute!(opts)
     end
 
     it 'should call get_report with File object when path is given' do
-      @connect.should_receive(:get_report).with(Date.today - 1,
+      @connection.should_receive(:get_report).with(Date.today - 1,
                                                 an_instance_of(File),
                                                 'Daily')
       opts = stub(@defaults.merge(:out => '/tmp/foobar'))
@@ -44,7 +44,7 @@ describe AppStore::Commands::Download do
     end
 
     it 'should use the given report type' do
-      @connect.should_receive(:get_report).with(Date.today - 1, $stdout, 'Weekly')
+      @connection.should_receive(:get_report).with(Date.today - 1, $stdout, 'Weekly')
       opts = stub(@defaults.merge({ :report => 'Weekly' }))
       @cmd.execute!(opts)
     end    
@@ -52,7 +52,7 @@ describe AppStore::Commands::Download do
     describe 'and the :db option is specified' do
       it 'should import the results into the DB' do
         t = Date.parse('8/31/2009')
-        @connect.should_receive(:get_report) do |date, io, report|
+        @connection.should_receive(:get_report) do |date, io, report|
           io << read_fixture('fixtures/report.txt')
           io.flush
         end

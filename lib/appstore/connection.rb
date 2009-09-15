@@ -12,7 +12,7 @@ require "nokogiri"
 # Implementation inspired by
 # http://code.google.com/p/itunes-connect-scraper/
 module AppStore
-  class Connect
+  class Connection
     
     REPORT_PERIODS = ["Monthly Free", "Weekly", "Daily"]
 
