@@ -99,6 +99,9 @@ describe AppStore::Commands do
         @clip.should_receive(:opt).
           with('t', 'to',
                :desc => 'The ending date, inclusive')
+        @clip.should_receive(:flag).
+          with('g', 'group',
+               :desc => 'Group results by country code')
 
         AppStore::Commands::Report.new(@clip)
       end

@@ -13,38 +13,60 @@ describe AppStore::Commands::Report do
         and_return(@store)
       @io = StringIO.new
       @data = [
-               mock(:report_date => Date.parse('2009/09/09'), :country => 'USD',
+               mock(:report_date => Date.parse('2009/09/09'), :country => 'US',
                     :install_count => 1, :update_count => 2),
-               mock(:report_date => Date.parse('2009/09/09'), :country => 'GBP',
+               mock(:report_date => Date.parse('2009/09/09'), :country => 'GB',
                     :install_count => 3, :update_count => 4)
               ] 
     end
     
-    it 'should requests counts with no options with no qualifiers' do
+    it 'should request counts with no options with no qualifiers' do
       @store.should_receive(:counts).and_return(@data)
-      clip = stub(:db => '/tmp/store.db', :null_object => true)
+      clip = stub(:db => '/tmp/store.db', :group? => false, :null_object => true)
       @cmd.execute!(clip, [], @io)
-      @io.string.should == "2009-09-09\tUSD\t1\t2\n" +
-        "2009-09-09\tGBP\t3\t4\n"
+      @io.string.should == "2009-09-09\tUS\t1\t2\n" +
+        "2009-09-09\tGB\t3\t4\n"
     end
 
     it 'should output data with other options' do
       @store.should_receive(:counts).
         with(:to => Date.parse('2009/09/09'),
              :from => Date.parse('2009/09/01'),
-             :country => 'USD').
+             :country => 'US').
         and_return(@data)
 
       clip = stub(:db => '/tmp/store.db',
+                  :group? => false,
                   :to => Date.parse('2009/09/09'),
                   :from => Date.parse('2009/09/01'),
-                  :country => 'USD')
+                  :country => 'US')
 
       @cmd.execute!(clip, [], @io)
-      @io.string.should == "2009-09-09\tUSD\t1\t2\n" +
-        "2009-09-09\tGBP\t3\t4\n"
+      @io.string.should == "2009-09-09\tUS\t1\t2\n" +
+        "2009-09-09\tGB\t3\t4\n"
     end
-    
+  end
+
+  describe 'with :group option specified' do
+    before(:each) do
+      @store = mock(AppStore::Store)
+      AppStore::Store.should_receive(:new).
+        with('/tmp/store.db').
+        and_return(@store)
+
+      @io = StringIO.new
+      @data = [
+               mock(:country => 'US', :install_count => 1, :update_count => 2),
+               mock(:country => 'GB', :install_count => 3, :update_count => 4)
+              ]
+    end
+  
+    it 'should request grouped country data' do
+      @store.should_receive(:country_counts).and_return(@data)
+      clip = stub(:db => '/tmp/store.db', :group? => true, :null_object => true)
+      @cmd.execute!(clip, [], @io)
+      @io.string.should == "US\t1\t2\nGB\t3\t4\n"
+    end
   end
 
   describe 'with invalid execution arguments' do

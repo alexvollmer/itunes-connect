@@ -60,6 +60,7 @@ module AppStore
 
       sql << " WHERE " unless clauses.empty?
       sql << clauses.join(" AND ") unless params.empty?
+      sql << " ORDER BY report_date DESC"
 
       @db.execute(sql, *params).map do |row|
         OpenStruct.new({
@@ -69,6 +70,49 @@ module AppStore
                          :update_count => row[4].to_i
                        })
       end
+    end
+
+    # Get summed counts by country, optionally constrained by dates
+    # and/or country codes. Available options are:
+    # <tt>:from</tt>:: The from date, defaults to the beginning 
+    # <tt>:to</tt>:: The end date, defaults to now
+    # <tt>:country</tt>:: The country code, defaults to <tt>nil</tt>
+    # which means no country code restriction
+    def country_counts(opts={ })
+      unless (leftovers = opts.keys - VALID_COUNT_OPTIONS).empty?
+        raise "Invalid keys: #{leftovers.join(', ')}"
+      end
+
+      params = []
+      clauses = []
+      sql = "SELECT country, SUM(install_count), SUM(update_count) FROM reports"
+
+      if opts[:from]
+        clauses << "report_date >= ?"
+        params << opts[:from]
+      end
+
+      if opts[:to]
+        clauses << "report_date <= ?"
+        params << opts[:to]
+      end
+
+      if opts[:country]
+        clauses << "country = ?"
+        params << opts[:country]
+      end
+
+      sql << " WHERE " unless clauses.empty?
+      sql << clauses.join(" AND ") unless params.empty?
+      sql << " GROUP BY country, ORDER BY country"
+
+      @db.execute(sql, *params).map do |row|
+        OpenStruct.new({
+                         :country => row[0],
+                         :install_count => row[1].to_i,
+                         :update_count => row[2].to_i
+                       })
+      end      
     end
   end
 end
