@@ -2,7 +2,9 @@
 
 This gem provides a very simple command-line utility and backing
 "library" (if I can be so bold to use the term in this context) for
-accessing sales reports from Apple's iTunes Connect website.
+accessing sales reports from Apple's iTunes Connect website. If you
+want to automate getting reports out of the App Store, this tool is
+for you.
 
 == Usage
 
@@ -10,12 +12,52 @@ accessing sales reports from Apple's iTunes Connect website.
 
 This gem comes with the <tt>appstore</tt> executable which you can use
 to download reports, import into a sqlite database and report
-from. Simply run the command without any arguments for usage.
+from.
 
-One important note, you may specify your iTunes Connect credentials on
+==== Downloading Reports
+You can download reports from iTunes Connect using <tt>appstore
+download</tt>. You may specify your iTunes Connect credentials on
 the command line _or_ you can put them in YAML format in
 <tt>~/.itunesrc</tt> with the keys of <tt>:username</tt> and
 <tt>:password</tt>.
+
+You can also dump the report to a file (or standard out):
+
+  appstore download -o /tmp/report.txt
+
+Or you can dump it directly into a sqlite3 database:
+
+  appstore download -b /tmp/report.db
+
+By default the <tt>download</tt> command will retrieve the most recent
+daily report.
+
+You can also ask for weekly or monthly reports by using the
+<tt>-r</tt> command-line option. Note that you can _not_ import a
+montly report directly into the database because the monthly reports
+don't have any days associated with the entries.
+
+Run <tt>appstore help download</tt> for full usage details.
+
+==== Importing Reports
+The <tt>import</tt> command allows you to dump an existing report file
+into the database. This is useful if you've already downloaded a
+number of reports from iTunes Connect and you just want to put them
+into the database.
+
+Run <tt>appstore help import</tt> for full usage details.
+
+==== Reporting
+The <tt>report</tt> command queries your database and can produce
+either detailed, or grouped output. In both cases you can constrain
+the query to any combination of country, start date and end date.
+
+Run <tt>appstore help report</tt> for full usage details.
+
+=== Programmatic Usage
+
+See the documentation for the AppStore::Connection,
+AppStore::Report and AppStore::Store classes for details.
 
 == Note on Patches/Pull Requests
  

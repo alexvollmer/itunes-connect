@@ -2,7 +2,7 @@ require "appstore/report"
 require "yaml"
 
 module AppStore::Commands
-  class Download
+  class Download                # :nodoc:
     def initialize(c, rcfile=File.expand_path("~/.itunesrc"))
       c.opt('u', 'username', :desc => 'iTunes Connect username')
       c.opt('p', 'password', :desc => 'iTunes Connect password')

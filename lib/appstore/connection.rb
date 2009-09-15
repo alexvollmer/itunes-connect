@@ -6,18 +6,17 @@ require "rubygems"
 require "httpclient"
 require "nokogiri"
 
-# Create an instance of this class and invoke the <tt>get_report</tt>
-# method.
-#
-# Implementation inspired by
-# http://code.google.com/p/itunes-connect-scraper/
 module AppStore
+
+  # Abstracts the iTunes Connect website.
+  # Implementation inspired by
+  # http://code.google.com/p/itunes-connect-scraper/
   class Connection
     
     REPORT_PERIODS = ["Monthly Free", "Weekly", "Daily"]
 
-    BASE_URL = 'https://itts.apple.com'
-    REFERER_URL = 'https://itts.apple.com/cgi-bin/WebObjects/Piano.woa'
+    BASE_URL = 'https://itts.apple.com' # :nodoc:
+    REFERER_URL = 'https://itts.apple.com/cgi-bin/WebObjects/Piano.woa' # :nodoc:
 
     # Create a new instance with the username and password used to sign
     # in to the iTunes Connect website
@@ -26,7 +25,7 @@ module AppStore
       @verbose = verbose
     end
 
-    def verbose?
+    def verbose?                # :nodoc:
       !!@verbose
     end
 

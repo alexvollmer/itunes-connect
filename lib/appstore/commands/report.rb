@@ -1,7 +1,7 @@
 require "appstore/store"
 
 module AppStore::Commands
-  class Report
+  class Report                  # :nodoc:
     def initialize(c)
       c.req('b', 'db', :desc => 'Dump report to sqlite DB at the given path')
       c.opt('c', 'country',

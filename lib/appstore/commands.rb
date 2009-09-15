@@ -3,7 +3,7 @@ require "appstore/commands/import"
 require "appstore/commands/report"
 require "appstore/commands/help"
 
-module AppStore::Commands
+module AppStore::Commands       # :nodoc:
   class << self
     def for_name(name, clip)
       self.const_get(name.capitalize.to_sym).new(clip)

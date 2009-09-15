@@ -2,7 +2,11 @@ require "sqlite3"
 require "ostruct"
 
 module AppStore
+  # Represents a database stored on disk.
   class Store
+    # Creates a new instance. If no database file exists at the given
+    # path a new one is created and the correct tables and indexes are
+    # added.
     def initialize(file, verbose=false)
       @db = SQLite3::Database.new(file)
       if @db.table_info("reports").empty?
@@ -15,10 +19,11 @@ module AppStore
       @verbose = verbose
     end
 
-    def verbose?
+    def verbose?                # :nodoc:
       !!@verbose
     end
-    
+
+    # Add a record to this instance
     def add(date, country, install_count, update_count)
       @db.execute("INSERT INTO reports (report_date, country, " +
                   "install_count, update_count) VALUES (?, ?, ?, ?)",

@@ -1,10 +1,19 @@
 require "ostruct"
 
+# This class transforms the raw input given in the constructor into a
+# series of objects representing each row. You can either get the
+# entire set of data by accessing the +data+ attribute, or by calling
+# the +each+ method and handing it a block.
 class AppStore::Report
   include Enumerable
 
+  # The report as a Hash, where the keys are country codes and the
+  # values are Hashes with the keys, <tt>:date</tt>, <tt>:upgrade</tt>,
+  # <tt>:install</tt>. 
   attr_reader :data
-  
+
+  # Give me an +IO+-like object (one that responds to the +lines+
+  # method) and I'll parse that sucker for you.
   def initialize(input)
     @data = Hash.new { |h,k| h[k] = { }}
     input.lines.each do |line|
@@ -23,7 +32,13 @@ class AppStore::Report
     end
   end
 
-  def each
+  # Yields each parsed data row to the given block. Each item yielded
+  # has the following attributes:
+  #   * country
+  #   * date
+  #   * install_count
+  #   * upgrade_count
+  def each                      # :yields: record
     @data.each do |country, value|
       if block_given?
         yield OpenStruct.new(:country => country,
@@ -34,6 +49,7 @@ class AppStore::Report
     end
   end
 
+  # The total number of rows in the report
   def size
     @data.size
   end

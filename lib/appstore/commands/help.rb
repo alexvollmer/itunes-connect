@@ -1,5 +1,5 @@
 module AppStore::Commands
-  class Help
+  class Help                    # :nodoc:
     def initialize(c)
       # nothing to do here
     end

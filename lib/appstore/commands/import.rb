@@ -1,7 +1,7 @@
 require "appstore/report"
 
 module AppStore::Commands
-  class Import
+  class Import                  # :nodoc:
     def initialize(c)
       c.req('b', 'db', :desc => 'Dump report to sqlite DB at the given path')
       c.req('f', 'file', :desc => 'The file to import, - means standard in')
