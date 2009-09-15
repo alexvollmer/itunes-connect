@@ -46,6 +46,7 @@ module AppStore
         raise ArgumentError, "You must specify a date before today"
       end
 
+      period = 'Monthly Free' if period == 'Monthly'
       unless REPORT_PERIODS.member?(period)
         raise ArgumentError, "'period' must be one of #{REPORT_PERIODS.join(', ')}"
       end
@@ -83,12 +84,11 @@ module AppStore
       date_str = case period
                  when 'Daily'
                    date.strftime("%m/%d/%Y")
-                 when 'Weekly'
+                 when 'Weekly', 'Monthly Free'
                    date = (doc / "//*[@id='dayorweekdropdown']/option").find do |d|
                      d1, d2 = d.text.split(' To ').map { |x| Date.parse(x) }
                      date >= d1 and date <= d2
                    end[:value] rescue nil
-                 when 'Monthly Free'
                  end
 
       raise ArgumentError, "No reports are available for that date" unless date_str

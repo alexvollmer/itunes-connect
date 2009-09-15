@@ -47,13 +47,7 @@ describe AppStore::Commands::Download do
       @connect.should_receive(:get_report).with(Date.today - 1, $stdout, 'Weekly')
       opts = stub(@defaults.merge({ :report => 'Weekly' }))
       @cmd.execute!(opts)
-    end
-
-    it 'should automatically capitalize report types' do
-      @connect.should_receive(:get_report).with(Date.today - 1, $stdout, 'Weekly')
-      opts = stub(@defaults.merge({ :report => 'weekly' })) # note, lower-case
-      @cmd.execute!(opts)
-    end
+    end    
 
     describe 'and the :db option is specified' do
       it 'should import the results into the DB' do
@@ -103,6 +97,11 @@ describe AppStore::Commands::Download do
       end.should raise_error(ArgumentError)
     end
     
+    it 'should reject requests to store monthly reports in the database' do
+      lambda do
+        opts = stub(@defaults.merge(:report => 'Monthly', :db => '/tmp/foo.db'))
+        @cmd.execute!(opts)
+      end.should raise_error(ArgumentError)
+    end
   end
-
 end

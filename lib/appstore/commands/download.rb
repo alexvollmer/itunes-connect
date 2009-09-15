@@ -12,7 +12,9 @@ module AppStore::Commands
       c.opt('b', 'db', :desc => 'Dump report to sqlite DB at the given path')
       c.opt('r', 'report',
             :desc => 'Report type. One of "Daily", "Weekly", "Monthly"',
-            :default => 'Daily')
+            :default => 'Daily') do |r|
+        r.capitalize
+      end
       @rcfile = rcfile
     end
 
@@ -33,13 +35,19 @@ module AppStore::Commands
         raise ArgumentError.new("You can only specify :out or :db, not both")
       end
 
+      if opts.report =~ /^Monthly/ and opts.db
+        raise ArgumentError.new("You cannot persist monthly reports to a " +
+                                "database because these reports have no dates " +
+                                "associated with them")
+      end
+
       connect = AppStore::Connect.new(username, password, opts.verbose?)
       out = if opts.out.nil?
               opts.db ? StringIO.new : $stdout
             else
               opts.out == "-" ? $stdout : File.open(opts.out, "w")
             end
-      connect.get_report(opts.date || Date.today - 1, out, opts.report.capitalize)
+      connect.get_report(opts.date || Date.today - 1, out, opts.report)
 
       if opts.db and StringIO === out
         store = AppStore::Store.new(opts.db, opts.verbose?)
