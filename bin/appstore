@@ -17,7 +17,6 @@ begin
     command.execute!(cli, cli.remainder)
   else
     $stderr.puts(cli)
-    $stderr.puts(cli.help)
   end
 rescue => e
   $stderr.puts(e.message)
