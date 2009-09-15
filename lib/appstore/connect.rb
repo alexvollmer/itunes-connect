@@ -91,8 +91,15 @@ module AppStore
                              'hiddenSubmitTypeName' => 'Download'
                            })
 
-      gunzip = Zlib::GzipReader.new(StringIO.new(report))
-      out << gunzip.read
+      begin
+        gunzip = Zlib::GzipReader.new(StringIO.new(report))
+        out << gunzip.read
+      rescue => e
+        doc = Nokogiri::HTML(report)
+        msg = (doc / "//font[@id='iddownloadmsg']").text.strip
+        $stderr.puts "Unable to download the report, reason:"
+        $stderr.puts msg.strip
+      end
     end
 
     private 
