@@ -3,7 +3,7 @@ require "ostruct"
 
 module AppStore
   class Store
-    def initialize(file)
+    def initialize(file, verbose=false)
       @db = SQLite3::Database.new(file)
       if @db.table_info("reports").empty?
         @db.execute("CREATE TABLE reports (id INTEGER PRIMARY KEY, " +
@@ -12,8 +12,13 @@ module AppStore
         @db.execute("CREATE UNIQUE INDEX u_reports_idx ON reports " +
                     "(report_date, country)")
       end
+      @verbose = verbose
     end
 
+    def verbose?
+      !!@verbose
+    end
+    
     def add(date, country, install_count, update_count)
       @db.execute("INSERT INTO reports (report_date, country, " +
                   "install_count, update_count) VALUES (?, ?, ?, ?)",
@@ -21,6 +26,7 @@ module AppStore
       true
     rescue SQLite3::SQLException => e
       if e.message =~ /columns .* are not unique/
+        $stdout.puts "Skipping existing row for #{country} on #{date}" if verbose?
         false
       else
         raise e

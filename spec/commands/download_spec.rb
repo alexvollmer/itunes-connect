@@ -8,7 +8,8 @@ describe AppStore::Commands::Download do
       :password => 'sekret',
       :date => nil,
       :out => nil,
-      :db => nil
+      :db => nil,
+      :verbose? => false
     }
   end
   
@@ -16,7 +17,7 @@ describe AppStore::Commands::Download do
     before(:each) do
       @connect = mock(AppStore::Connect)
       AppStore::Connect.should_receive(:new).
-        with('dudeman', 'sekret').
+        with('dudeman', 'sekret', false).
         and_return(@connect)
     end
 
@@ -52,7 +53,7 @@ describe AppStore::Commands::Download do
         store.should_receive(:add).with(t, 'AR', 0, 1)
         store.should_receive(:add).with(t, 'US', 1, 3)
         AppStore::Store.should_receive(:new).
-          with('/tmp/foobar.db').
+          with('/tmp/foobar.db', false).
           and_return(store)
 
         opts = stub(@defaults.merge(:db => '/tmp/foobar.db',

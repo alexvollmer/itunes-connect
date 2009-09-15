@@ -10,13 +10,18 @@ module AppStore::Commands
     def execute!(opts, args=[])
       raise ArgumentError.new("Missing :db option") if opts.db.nil?
       raise ArgumentError.new("Missing :file option") if opts.file.nil?
-      store = AppStore::Store.new(opts.db)
+      store = AppStore::Store.new(opts.db, opts.verbose?)
       input = opts.file == '-' ? $stdin : open(opts.file, 'r')
+      count = 0
       AppStore::Report.new(input).each do |entry|
-        store.add(entry.date,
-                  entry.country,
-                  entry.install_count,
-                  entry.upgrade_count)
+        count += 1 if store.add(entry.date,
+                                entry.country,
+                                entry.install_count,
+                                entry.upgrade_count)
+      end
+
+      if opts.verbose?
+        $stdout.puts "Added #{count} rows to the database"
       end
     end
 

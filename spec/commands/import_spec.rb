@@ -11,7 +11,7 @@ describe AppStore::Commands::Import do
     before(:each) do
       @store = mock(AppStore::Store)
       AppStore::Store.should_receive(:new).
-        with("/tmp/store.db").
+        with("/tmp/store.db", false).
         and_return(@store)
     end
     
@@ -21,7 +21,9 @@ describe AppStore::Commands::Import do
       @store.should_receive(:add).with(t, 'AR', 0, 1)
       @store.should_receive(:add).with(t, 'US', 1, 3)
       report_file = File.join(File.dirname(__FILE__), '..', 'fixtures', 'report.txt')
-      @cmd.execute!(stub(:db => '/tmp/store.db', :file => report_file))
+      @cmd.execute!(stub(:db => '/tmp/store.db',
+                         :file => report_file,
+                         :verbose? => false))
     end
   end
 

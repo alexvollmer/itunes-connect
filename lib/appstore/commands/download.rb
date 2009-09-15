@@ -30,7 +30,7 @@ module AppStore::Commands
         raise ArgumentError.new("You can only specify :out or :db, not both")
       end
 
-      connect = AppStore::Connect.new(username, password)
+      connect = AppStore::Connect.new(username, password, opts.verbose?)
       out = if opts.out.nil?
               opts.db ? StringIO.new : $stdout
             else
@@ -39,15 +39,17 @@ module AppStore::Commands
       connect.get_report(opts.date || Date.today - 1, out)
 
       if opts.db and StringIO === out
-        store = AppStore::Store.new(opts.db)
+        store = AppStore::Store.new(opts.db, opts.verbose?)
         out.rewind
         report = AppStore::Report.new(out)
+        count = 0
         report.each do |entry|
-          store.add(entry.date,
-                    entry.country,
-                    entry.install_count,
-                    entry.upgrade_count)
+          count += 1 if store.add(entry.date,
+                                  entry.country,
+                                  entry.install_count,
+                                  entry.upgrade_count)
         end
+        $stdout.puts "Inserted #{count} rows into #{opts.db}" if opts.verbose?
       end
 
       out.flush

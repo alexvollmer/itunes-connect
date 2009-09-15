@@ -1,4 +1,5 @@
 require "digest/md5"
+require "tempfile"
 require "yaml"
 require "zlib"
 require "rubygems"
@@ -12,7 +13,6 @@ require "nokogiri"
 # http://code.google.com/p/itunes-connect-scraper/
 module AppStore
   class Connect
-    attr_accessor :debug
     
     REPORT_PERIODS = ["Monthly Free", "Weekly", "Daily"]
 
@@ -21,8 +21,13 @@ module AppStore
 
     # Create a new instance with the username and password used to sign
     # in to the iTunes Connect website
-    def initialize(username, password)
+    def initialize(username, password, verbose=false)
       @username, @password = username, password
+      @verbose = verbose
+    end
+
+    def verbose?
+      !!@verbose
     end
 
     # Retrieve a report from iTunes Connect. This method will return the
@@ -112,10 +117,17 @@ module AppStore
 
       response = client.get(url, query, headers)
 
-      if self.debug
-        md5 = Digest::MD5.new; md5 << url; md5 << Time.now
-        path = File.join(Dir.tmpdir, md5.hexdigest(url))
-        out = open(path, "w") { |f| response.dump(f) }
+      if self.verbose?
+        md5 = Digest::MD5.new; md5 << url; md5 << Time.now.to_s
+        path = File.join(Dir.tmpdir, md5.to_s + ".html")
+        out = open(path, "w") do |f|
+          f << "Status: #{response.status}\n"
+          f << response.header.all.map do |name, value|
+            "#{name}: #{value}"
+          end.join("\n")
+          f << "\n\n"
+          f << response.body.dump
+        end
         puts "#{url} -> #{path}"
       end
       
