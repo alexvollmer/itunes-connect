@@ -9,7 +9,8 @@ describe AppStore::Commands::Download do
       :date => nil,
       :out => nil,
       :db => nil,
-      :verbose? => false
+      :verbose? => false,
+      :report => 'Daily'
     }
   end
   
@@ -22,28 +23,42 @@ describe AppStore::Commands::Download do
     end
 
     it 'should call get_report correctly with no args' do
-      @connect.should_receive(:get_report).with(Date.today - 1, $stdout)
+      @connect.should_receive(:get_report).with(Date.today - 1, $stdout, 'Daily')
       opts = stub(@defaults)
       @cmd.execute!(opts)
     end
 
     it 'should call get_report with date argument when given' do
       today = Date.today - 15
-      @connect.should_receive(:get_report).with(today, $stdout)
+      @connect.should_receive(:get_report).with(today, $stdout, 'Daily')
       opts = stub(@defaults.merge(:date => today))
       @cmd.execute!(opts)
     end
 
     it 'should call get_report with File object when path is given' do
-      @connect.should_receive(:get_report).with(Date.today - 1, an_instance_of(File))
+      @connect.should_receive(:get_report).with(Date.today - 1,
+                                                an_instance_of(File),
+                                                'Daily')
       opts = stub(@defaults.merge(:out => '/tmp/foobar'))
+      @cmd.execute!(opts)
+    end
+
+    it 'should use the given report type' do
+      @connect.should_receive(:get_report).with(Date.today - 1, $stdout, 'Weekly')
+      opts = stub(@defaults.merge({ :report => 'Weekly' }))
+      @cmd.execute!(opts)
+    end
+
+    it 'should automatically capitalize report types' do
+      @connect.should_receive(:get_report).with(Date.today - 1, $stdout, 'Weekly')
+      opts = stub(@defaults.merge({ :report => 'weekly' })) # note, lower-case
       @cmd.execute!(opts)
     end
 
     describe 'and the :db option is specified' do
       it 'should import the results into the DB' do
         t = Date.parse('8/31/2009')
-        @connect.should_receive(:get_report) do |date, io|
+        @connect.should_receive(:get_report) do |date, io, report|
           io << read_fixture('fixtures/report.txt')
           io.flush
         end
@@ -72,14 +87,22 @@ describe AppStore::Commands::Download do
       lambda { @cmd.execute!(stub(@defaults.merge(:username => nil))) }.
         should raise_error(ArgumentError)
     end
-  end
+    
+    it 'should reject getting both :out and :db options' do
+      lambda do
+        opts = stub(@defaults.merge(:db => '/tmp/foobar.db',
+                                    :out => '/tmp/foobar.txt'))
+        @cmd.execute!(opts)
+      end.should raise_error(ArgumentError)
+    end
 
-  it 'should reject getting both :out and :db options' do
-    lambda do
-      opts = stub(@defaults.merge(:db => '/tmp/foobar.db',
-                                  :out => '/tmp/foobar.txt'))
-      @cmd.execute!(opts)
-    end.should raise_error(ArgumentError)
+    it 'should reject invalid report types' do
+      lambda do
+        opts = stub(@defaults.merge(:report => 'Glowing'))
+        @cmd.execute!(opts)
+      end.should raise_error(ArgumentError)
+    end
+    
   end
 
 end

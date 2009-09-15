@@ -10,6 +10,9 @@ module AppStore::Commands
             :default => (Date.today - 1).strftime('%m/%d/%Y'))
       c.opt('o', 'out', :desc => 'Dump report to file, - is stdout')
       c.opt('b', 'db', :desc => 'Dump report to sqlite DB at the given path')
+      c.opt('r', 'report',
+            :desc => 'Report type. One of "Daily", "Weekly", "Monthly"',
+            :default => 'Daily')
       @rcfile = rcfile
     end
 
@@ -36,7 +39,7 @@ module AppStore::Commands
             else
               opts.out == "-" ? $stdout : File.open(opts.out, "w")
             end
-      connect.get_report(opts.date || Date.today - 1, out)
+      connect.get_report(opts.date || Date.today - 1, out, opts.report.capitalize)
 
       if opts.db and StringIO === out
         store = AppStore::Store.new(opts.db, opts.verbose?)

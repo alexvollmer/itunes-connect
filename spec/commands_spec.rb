@@ -67,6 +67,10 @@ describe AppStore::Commands do
         @clip.should_receive(:opt).
           with('b', 'db',
                :desc => 'Dump report to sqlite DB at the given path')
+        @clip.should_receive(:opt).
+          with('r', 'report',
+               :desc => 'Report type. One of "Daily", "Weekly", "Monthly"',
+               :default => 'Daily')
 
         AppStore::Commands::Download.new(@clip)
       end

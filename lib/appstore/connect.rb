@@ -45,12 +45,10 @@ module AppStore
       if date >= Date.today
         raise ArgumentError, "You must specify a date before today"
       end
-      
+
       unless REPORT_PERIODS.member?(period)
         raise ArgumentError, "'period' must be one of #{REPORT_PERIODS.join(', ')}"
       end
-
-      date_str = date.strftime("%m/%d/%Y")
 
       # grab the home page
       doc = Nokogiri::HTML(get_content(REFERER_URL))
@@ -82,6 +80,19 @@ module AppStore
       date_name = (doc / "//*[@id='dayorweekdropdown']/@name").to_s
 
       # now get the report
+      date_str = case period
+                 when 'Daily'
+                   date.strftime("%m/%d/%Y")
+                 when 'Weekly'
+                   date = (doc / "//*[@id='dayorweekdropdown']/option").find do |d|
+                     d1, d2 = d.text.split(' To ').map { |x| Date.parse(x) }
+                     date >= d1 and date <= d2
+                   end[:value] rescue nil
+                 when 'Monthly Free'
+                 end
+
+      raise ArgumentError, "No reports are available for that date" unless date_str
+                 
       report = get_content(report_url, {
                              report_type_name => 'Summary',
                              date_type_name => period,
@@ -109,6 +120,7 @@ module AppStore
     end
 
     def get_content(uri, query=nil, headers={ })
+      $stdout.puts "Querying #{uri} with #{query.inspect}" if self.verbose?
       if @referer
         headers = {
           'Referer' => @referer,
