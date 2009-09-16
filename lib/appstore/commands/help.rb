@@ -1,3 +1,5 @@
+require "appstore/commands"
+
 module AppStore::Commands
   class Help                    # :nodoc:
     def initialize(c)
@@ -14,12 +16,11 @@ module AppStore::Commands
                      cmd.new(Clip::Parser.new).description)
         end
       else
-        cli = Clip do |c|
-          cmd = AppStore::Commands.for_name(args.first, c)
-          c.banner = "Command options for '#{cmd.class.to_s.split('::').last.downcase}':"
-          raise ArgumentError.new("Unrecognized command '#{args.first}'") if cmd.nil?
-          out.puts(c.help)
-        end
+        cli = AppStore::Commands.default_clip
+        cmd = AppStore::Commands.for_name(args.first, cli)
+        cli.banner = "Command options for '#{cmd.class.to_s.split('::').last.downcase}':"
+        raise ArgumentError.new("Unrecognized command '#{args.first}'") if cmd.nil?
+        out.puts(cli.help)
       end
     end
 

@@ -6,9 +6,7 @@ require "clip"
 AppStore::Commands.usage("No command given") if ARGV.empty?
 
 command_name = ARGV.shift
-cli = Clip::Parser.new
-cli.flag('v', 'verbose', :desc => 'Make output more verbose')
-cli.flag('g', 'debug', :desc => 'Enable debug output/features (dev only)')
+cli = AppStore::Commands.default_clip
 command = AppStore::Commands.for_name(command_name, cli)
 AppStore::Commands.usage("Unrecognized command '#{command_name}'") if command.nil?
 

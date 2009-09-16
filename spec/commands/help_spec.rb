@@ -13,28 +13,25 @@ describe AppStore::Commands::Help do
     
     it 'should dump the "download" command usage to :out' do
       @cmd.execute!(nil, %w(download), @io)
-      clip = Clip do |c|
-        c.banner = "Command options for 'download':"
-        AppStore::Commands::Download.new(c)
-      end
+      clip = AppStore::Commands.default_clip
+      clip.banner = "Command options for 'download':"
+      AppStore::Commands::Download.new(clip)
       @io.string.should == clip.help
     end
 
     it 'should dump the "import" command usage to :out' do
       @cmd.execute!(nil, %w(import), @io)
-      clip = Clip do |c|
-        c.banner = "Command options for 'import':"
-        AppStore::Commands::Import.new(c)
-      end
+      clip = AppStore::Commands.default_clip
+      clip.banner = "Command options for 'import':"
+      AppStore::Commands::Import.new(clip)
       @io.string.should == clip.help
     end
 
     it 'should dump the "report" command usage to :out' do
       @cmd.execute!(nil, %w(report), @io)
-      clip = Clip do |c|
-        c.banner = "Command options for 'report':"
-        AppStore::Commands::Report.new(c)
-      end
+      clip = AppStore::Commands.default_clip
+      clip.banner = "Command options for 'report':"
+      AppStore::Commands::Report.new(clip)
       @io.string.should == clip.help
     end
   end

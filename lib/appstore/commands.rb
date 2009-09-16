@@ -2,6 +2,7 @@ require "appstore/commands/download"
 require "appstore/commands/import"
 require "appstore/commands/report"
 require "appstore/commands/help"
+require "clip"
 
 module AppStore::Commands       # :nodoc:
   class << self
@@ -28,6 +29,13 @@ module AppStore::Commands       # :nodoc:
         puts
       end
       exit 1
+    end
+
+    def default_clip
+      cli = Clip::Parser.new
+      cli.flag('v', 'verbose', :desc => 'Make output more verbose')
+      cli.flag('g', 'debug', :desc => 'Enable debug output/features (dev only)')
+      cli
     end
   end
 end

@@ -13,7 +13,7 @@ module AppStore::Commands
       c.opt('t', 'to', :desc => 'The ending date, inclusive') do |t|
         Date.parse(t)
       end
-      c.flag('g', 'group', :desc => 'Group results by country code')
+      c.flag('s', 'summarize', :desc => 'Summarize results by country code')
       c.flag('n', 'no-header', :desc => 'Suppress the column headers on output')
       c.opt('d', 'delimiter',
              :desc => 'The delimiter to use for output (normally TAB)',

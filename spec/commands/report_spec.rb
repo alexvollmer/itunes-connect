@@ -152,8 +152,8 @@ EOF
         with('t', 'to',
              :desc => 'The ending date, inclusive')
       clip.should_receive(:flag).
-        with('g', 'group',
-             :desc => 'Group results by country code')
+        with('s', 'summarize',
+             :desc => 'Summarize results by country code')
       clip.should_receive(:flag).
         with('n', 'no-header',
              :desc => 'Suppress the column headers on output')
