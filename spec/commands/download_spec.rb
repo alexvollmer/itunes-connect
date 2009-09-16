@@ -13,6 +13,7 @@ describe AppStore::Commands::Download do
       :out => nil,
       :db => nil,
       :verbose? => false,
+      :debug? => false,
       :report => 'Daily'
     }
   end
@@ -21,7 +22,7 @@ describe AppStore::Commands::Download do
     before(:each) do
       @connection = mock(AppStore::Connection)
       AppStore::Connection.should_receive(:new).
-        with('dudeman', 'sekret', false).
+        with('dudeman', 'sekret', false, false).
         and_return(@connection)
     end
 

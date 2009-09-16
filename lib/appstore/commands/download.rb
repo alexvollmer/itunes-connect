@@ -38,7 +38,10 @@ module AppStore::Commands
                                 "associated with them")
       end
 
-      connection = AppStore::Connection.new(username, password, opts.verbose?)
+      connection = AppStore::Connection.new(username,
+                                            password,
+                                            opts.verbose?,
+                                            opts.debug?)
       db = opts.db || @rcfile.database
       out = if opts.out.nil?
               db ? StringIO.new : $stdout

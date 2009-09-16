@@ -20,13 +20,18 @@ module AppStore
 
     # Create a new instance with the username and password used to sign
     # in to the iTunes Connect website
-    def initialize(username, password, verbose=false)
+    def initialize(username, password, verbose=false, debug=false)
       @username, @password = username, password
       @verbose = verbose
+      @debug = debug
     end
 
     def verbose?                # :nodoc:
       !!@verbose
+    end
+
+    def debug?                  # :nodoc:
+      !!@debug
     end
 
     # Retrieve a report from iTunes Connect. This method will return the
@@ -119,7 +124,7 @@ module AppStore
     end
 
     def get_content(uri, query=nil, headers={ })
-      $stdout.puts "Querying #{uri} with #{query.inspect}" if self.verbose?
+      $stdout.puts "Querying #{uri} with #{query.inspect}" if self.debug?
       if @referer
         headers = {
           'Referer' => @referer,
@@ -135,7 +140,7 @@ module AppStore
 
       response = client.get(url, query, headers)
 
-      if self.verbose?
+      if self.debug?
         md5 = Digest::MD5.new; md5 << url; md5 << Time.now.to_s
         path = File.join(Dir.tmpdir, md5.to_s + ".html")
         out = open(path, "w") do |f|
