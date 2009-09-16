@@ -3,6 +3,14 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 describe AppStore::Commands::Report do
   before(:each) do
     @cmd = AppStore::Commands::Report.new(mock(:null_object => true))
+    @defaults = {
+      :db => '/tmp/store.db',
+      :group? => false,
+      :to => nil,
+      :from => nil,
+      :country => nil,
+      :no_header? => false
+    }
   end
 
   describe 'with valid execution arguments' do
@@ -22,10 +30,13 @@ describe AppStore::Commands::Report do
     
     it 'should request counts with no options with no qualifiers' do
       @store.should_receive(:counts).and_return(@data)
-      clip = stub(:db => '/tmp/store.db', :group? => false, :null_object => true)
+      clip = stub(@defaults.merge(:db => '/tmp/store.db'))
       @cmd.execute!(clip, [], @io)
-      @io.string.should == "2009-09-09\tUS\t1\t2\n" +
-        "2009-09-09\tGB\t3\t4\n"
+      @io.string.should == <<EOF
+Date\tCountry\tInstalls\tUpgrades
+2009-09-09\tUS\t1\t2
+2009-09-09\tGB\t3\t4
+EOF
     end
 
     it 'should output data with other options' do
@@ -35,15 +46,27 @@ describe AppStore::Commands::Report do
              :country => 'US').
         and_return(@data)
 
-      clip = stub(:db => '/tmp/store.db',
-                  :group? => false,
-                  :to => Date.parse('2009/09/09'),
-                  :from => Date.parse('2009/09/01'),
-                  :country => 'US')
+      clip = stub(@defaults.merge(:db => '/tmp/store.db',
+                                  :to => Date.parse('2009/09/09'),
+                                  :from => Date.parse('2009/09/01'),
+                                  :country => 'US'))
 
       @cmd.execute!(clip, [], @io)
-      @io.string.should == "2009-09-09\tUS\t1\t2\n" +
-        "2009-09-09\tGB\t3\t4\n"
+      @io.string.should == <<EOF
+Date\tCountry\tInstalls\tUpgrades
+2009-09-09\tUS\t1\t2
+2009-09-09\tGB\t3\t4
+EOF
+    end
+
+    it 'should suppress the header when requested' do
+      @store.should_receive(:counts). and_return(@data)
+      clip = stub(@defaults.merge(:no_header? => true))
+      @cmd.execute!(clip, [], @io)
+      @io.string.should == <<EOF
+2009-09-09\tUS\t1\t2
+2009-09-09\tGB\t3\t4
+EOF
     end
   end
 
@@ -63,10 +86,25 @@ describe AppStore::Commands::Report do
     
     it 'should request grouped country data' do
       @store.should_receive(:country_counts).and_return(@data)
-      clip = stub(:db => '/tmp/store.db', :group? => true, :null_object => true)
+      clip = stub(@defaults.merge(:group? => true))
       @cmd.execute!(clip, [], @io)
-      @io.string.should == "US\t1\t2\nGB\t3\t4\n"
+      @io.string.should == <<EOF
+Country\tInstalls\tUpgrades
+US\t1\t2
+GB\t3\t4
+EOF
     end
+
+    it 'should suppress the header when requested' do
+      @store.should_receive(:country_counts).and_return(@data)
+      clip = stub(@defaults.merge(:group? => true, :no_header? => true))
+      @cmd.execute!(clip, [], @io)
+      @io.string.should == <<EOF
+US\t1\t2
+GB\t3\t4
+EOF
+    end
+    
   end
 
   describe 'with invalid execution arguments' do
@@ -93,6 +131,9 @@ describe AppStore::Commands::Report do
       clip.should_receive(:flag).
         with('g', 'group',
              :desc => 'Group results by country code')
+      clip.should_receive(:flag).
+        with('n', 'no-header',
+             :desc => 'Suppress the column headers on output')
 
       AppStore::Commands::Report.new(clip)
     end
