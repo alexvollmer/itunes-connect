@@ -60,7 +60,7 @@ describe AppStore::Commands::Report do
                mock(:country => 'GB', :install_count => 3, :update_count => 4)
               ]
     end
-  
+    
     it 'should request grouped country data' do
       @store.should_receive(:country_counts).and_return(@data)
       clip = stub(:db => '/tmp/store.db', :group? => true, :null_object => true)
@@ -72,6 +72,29 @@ describe AppStore::Commands::Report do
   describe 'with invalid execution arguments' do
     it 'should require the :db option' do
       lambda { @cmd.execute! }.should raise_error(ArgumentError)
+    end
+  end
+
+  describe 'command-line option parsing' do
+    it 'should add appropriate options to a given Clip' do
+      clip = mock("Clip")
+      clip.should_receive(:req).
+        with('b', 'db',
+             :desc => 'Dump report to sqlite DB at the given path')
+      clip.should_receive(:opt).
+        with('c', 'country',
+             :desc => 'A two-letter country code to filter results with')
+      clip.should_receive(:opt).
+        with('f', 'from',
+             :desc => 'The starting date, inclusive')
+      clip.should_receive(:opt).
+        with('t', 'to',
+             :desc => 'The ending date, inclusive')
+      clip.should_receive(:flag).
+        with('g', 'group',
+             :desc => 'Group results by country code')
+
+      AppStore::Commands::Report.new(clip)
     end
   end
   

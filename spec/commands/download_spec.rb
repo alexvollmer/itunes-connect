@@ -104,4 +104,33 @@ describe AppStore::Commands::Download do
       end.should raise_error(ArgumentError)
     end
   end
+
+  describe 'setting up command-line options' do
+    it 'should add appropriate options to given Clip' do
+      clip = mock('Clip')
+      clip.should_receive(:opt).
+        with('u', 'username',
+             :desc => 'iTunes Connect username')
+      clip.should_receive(:opt).
+        with('p', 'password',
+             :desc => 'iTunes Connect password')
+      clip.should_receive(:opt).
+        with('d', 'date',
+             :desc => 'Daily report date (MM/DD/YYYY format)',
+             :default => (Date.today - 1).strftime('%m/%d/%Y'))
+      clip.should_receive(:opt).
+        with('o', 'out',
+             :desc => 'Dump report to file, - is stdout')
+      clip.should_receive(:opt).
+        with('b', 'db',
+             :desc => 'Dump report to sqlite DB at the given path')
+      clip.should_receive(:opt).
+        with('r', 'report',
+             :desc => 'Report type. One of "Daily", "Weekly", "Monthly"',
+             :default => 'Daily')
+
+      AppStore::Commands::Download.new(clip)
+    end
+  end
+  
 end

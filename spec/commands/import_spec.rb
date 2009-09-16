@@ -45,4 +45,19 @@ describe AppStore::Commands::Import do
     end
   end
 
+  describe 'setting up command-line parsing' do
+
+    it 'should add appropriate options to a given Clip' do
+      clip = mock('Clip')
+      clip.should_receive(:req).
+        with('b', 'db',
+             :desc => 'Dump report to sqlite DB at the given path')
+      clip.should_receive(:req).
+        with('f', 'file',
+             :desc => 'The file to import, - means standard in')
+
+      AppStore::Commands::Import.new(clip)
+    end
+  end
+  
 end
