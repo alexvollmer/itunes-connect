@@ -15,6 +15,9 @@ module AppStore::Commands
       end
       c.flag('g', 'group', :desc => 'Group results by country code')
       c.flag('n', 'no-header', :desc => 'Suppress the column headers on output')
+      c.opt('d', 'delimiter',
+             :desc => 'The delimiter to use for output (normally TAB)',
+             :default => "\t")
       @rcfile = rcfile
     end
 
@@ -30,22 +33,22 @@ module AppStore::Commands
 
       if opts.group?
         unless opts.no_header?
-          out.puts(%w(Country Installs Upgrades).join("\t"))
+          out.puts(%w(Country Installs Upgrades).join(opts.delimiter))
         end
         store.country_counts(params).each do |x|
           out.puts [x.country,
                     x.install_count,
-                    x.update_count].join("\t")
+                    x.update_count].join(opts.delimiter)
         end
       else
         unless opts.no_header?
-          out.puts(%w(Date Country Installs Upgrades).join("\t"))
+          out.puts(%w(Date Country Installs Upgrades).join(opts.delimiter))
         end
         store.counts(params).each do |x|
           out.puts [x.report_date,
                     x.country,
                     x.install_count,
-                    x.update_count].join("\t")
+                    x.update_count].join(opts.delimiter)
         end
       end
       out.flush

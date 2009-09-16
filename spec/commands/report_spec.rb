@@ -9,7 +9,8 @@ describe AppStore::Commands::Report do
       :to => nil,
       :from => nil,
       :country => nil,
-      :no_header? => false
+      :no_header? => false,
+      :delimiter => "\t"
     }
   end
 
@@ -68,6 +69,18 @@ EOF
 2009-09-09\tGB\t3\t4
 EOF
     end
+
+    it 'should separate fields with specified delimiter' do
+      @store.should_receive(:counts). and_return(@data)
+      clip = stub(@defaults.merge(:delimiter => "|"))
+      @cmd.execute!(clip, [], @io)
+      @io.string.should == <<EOF
+Date|Country|Installs|Upgrades
+2009-09-09|US|1|2
+2009-09-09|GB|3|4
+EOF
+    end
+    
   end
 
   describe 'with :group option specified' do
@@ -104,7 +117,17 @@ US\t1\t2
 GB\t3\t4
 EOF
     end
-    
+
+    it 'should separate fields with the specified delimiter' do
+      @store.should_receive(:country_counts).and_return(@data)
+      clip = stub(@defaults.merge(:group? => true, :delimiter => '|'))
+      @cmd.execute!(clip, [], @io)
+      @io.string.should == <<EOF
+Country|Installs|Upgrades
+US|1|2
+GB|3|4
+EOF
+    end
   end
 
   describe 'with invalid execution arguments' do
@@ -134,6 +157,10 @@ EOF
       clip.should_receive(:flag).
         with('n', 'no-header',
              :desc => 'Suppress the column headers on output')
+      clip.should_receive(:opt).
+        with('d', 'delimiter',
+             :desc => 'The delimiter to use for output (normally TAB)',
+             :default => "\t")
 
       AppStore::Commands::Report.new(clip)
     end
