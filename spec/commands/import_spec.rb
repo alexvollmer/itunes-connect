@@ -4,7 +4,8 @@ require "tempfile"
 describe AppStore::Commands::Import do
 
   before(:each) do
-    @cmd = AppStore::Commands::Import.new(mock(:null_object => true))
+    @cmd = AppStore::Commands::Import.new(mock(:null_object => true),
+                                          '/tmp/fake-itunesrc')
   end
 
   describe 'with valid execution arguments' do
@@ -40,7 +41,7 @@ describe AppStore::Commands::Import do
 
     it 'should reject missing :db option' do
       lambda do
-        @cmd.execute!(stub(:file => '/tmp/report.txt', :db => nil))
+        @cmd.execute!(stub(:db => nil, :file => '/tmp/report.txt', :verbose? => false))
       end.should raise_error(ArgumentError)
     end
   end
@@ -49,7 +50,7 @@ describe AppStore::Commands::Import do
 
     it 'should add appropriate options to a given Clip' do
       clip = mock('Clip')
-      clip.should_receive(:req).
+      clip.should_receive(:opt).
         with('b', 'db',
              :desc => 'Dump report to sqlite DB at the given path')
       clip.should_receive(:req).

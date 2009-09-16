@@ -78,7 +78,7 @@ describe AppStore::Commands::Report do
   describe 'command-line option parsing' do
     it 'should add appropriate options to a given Clip' do
       clip = mock("Clip")
-      clip.should_receive(:req).
+      clip.should_receive(:opt).
         with('b', 'db',
              :desc => 'Dump report to sqlite DB at the given path')
       clip.should_receive(:opt).

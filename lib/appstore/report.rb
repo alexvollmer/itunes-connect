@@ -12,11 +12,11 @@ class AppStore::Report
   # <tt>:install</tt>. 
   attr_reader :data
 
-  # Give me an +IO+-like object (one that responds to the +lines+
+  # Give me an +IO+-like object (one that responds to the +each+
   # method) and I'll parse that sucker for you.
   def initialize(input)
     @data = Hash.new { |h,k| h[k] = { }}
-    input.lines.each do |line|
+    input.each.each do |line|
       line.chomp!
       next if line =~ /^(Provider|$)/
       tokens = line.split(/\s+/)
