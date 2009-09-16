@@ -14,6 +14,16 @@ This gem comes with the <tt>appstore</tt> executable which you can use
 to download reports, import into a sqlite database and report
 from.
 
+You can specify the default values for a handful of command-line
+options by putting them in a file named <tt>.itunesrc</tt> in your
+home directory. The file is in YAML format and should look something
+like this:
+
+  --- 
+  :username: myusername
+  :password: mysekrets3key
+  :database: /my/appstore/database.db
+
 ==== Downloading Reports
 You can download reports from iTunes Connect using <tt>appstore
 download</tt>. You may specify your iTunes Connect credentials on
@@ -30,7 +40,9 @@ Or you can dump it directly into a sqlite3 database:
   appstore download -b /tmp/report.db
 
 By default the <tt>download</tt> command will retrieve the most recent
-daily report.
+daily report. If you have a <tt>database</tt> key in your
+<tt>~/.itunesrc</tt> file and you _don't_ specify an out file, the
+report will be automatically imported into the database.
 
 You can also ask for weekly or monthly reports by using the
 <tt>-r</tt> command-line option. Note that you can _not_ import a

@@ -39,15 +39,17 @@ module AppStore::Commands
       end
 
       connection = AppStore::Connection.new(username, password, opts.verbose?)
+      db = opts.db || @rcfile.database
       out = if opts.out.nil?
-              opts.db ? StringIO.new : $stdout
+              db ? StringIO.new : $stdout
             else
               opts.out == "-" ? $stdout : File.open(opts.out, "w")
             end
       connection.get_report(opts.date || Date.today - 1, out, opts.report)
 
-      if opts.db and StringIO === out
-        store = AppStore::Store.new(opts.db, opts.verbose?)
+      if db and StringIO === out
+        $stdout.puts "Importing into database file: #{db}" if opts.verbose?
+        store = AppStore::Store.new(db, opts.verbose?)
         out.rewind
         report = AppStore::Report.new(out)
         count = 0
