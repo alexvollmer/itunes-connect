@@ -5,7 +5,9 @@ describe AppStore::Commands::Import do
 
   before(:each) do
     @cmd = AppStore::Commands::Import.new(mock(:null_object => true),
-                                          '/tmp/fake-itunesrc')
+                                          mock(:username => nil,
+                                               :password => nil,
+                                               :database => nil))
   end
 
   describe 'with valid execution arguments' do

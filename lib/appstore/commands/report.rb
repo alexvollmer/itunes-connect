@@ -1,8 +1,9 @@
+require "appstore/rc_file"
 require "appstore/store"
 
 module AppStore::Commands
   class Report                  # :nodoc:
-    def initialize(c, rcfile=File.expand_path("~/.itunesrc"))
+    def initialize(c, rcfile=AppStore::RcFile.default)
       c.opt('b', 'db', :desc => 'Dump report to sqlite DB at the given path')
       c.opt('c', 'country',
             :desc => 'A two-letter country code to filter results with')
@@ -17,15 +18,7 @@ module AppStore::Commands
     end
 
     def execute!(opts, args=[], out=$stdout)
-      db = if opts.db
-             opts.db
-           elsif @rcfile and File.exist?(@rcfile)
-             rc = YAML.load_file(@rcfile)
-             File.expand_path(rc[:database])
-           else
-             nil
-           end
-      
+      db = opts.db || @rcfile.database || nil
       raise ArgumentError.new("Missing :db option") if db.nil?
       store = AppStore::Store.new(db)
       params = {

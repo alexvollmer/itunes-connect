@@ -1,9 +1,9 @@
+require "appstore/rc_file"
 require "appstore/report"
-require "yaml"
 
 module AppStore::Commands
   class Download                # :nodoc:
-    def initialize(c, rcfile=File.expand_path("~/.itunesrc"))
+    def initialize(c, rcfile=AppStore::RcFile.default)
       c.opt('u', 'username', :desc => 'iTunes Connect username')
       c.opt('p', 'password', :desc => 'iTunes Connect password')
       c.opt('d', 'date', :desc => 'Daily report date (MM/DD/YYYY format)',
@@ -21,11 +21,8 @@ module AppStore::Commands
     def execute!(opts, args=[])
       username, password = if opts.username and opts.password
                              [opts.username, opts.password]
-                           elsif File.exist?(@rcfile)
-                             creds = YAML.load_file(@rcfile)
-                             [creds[:username], creds[:password]]
                            else
-                             [nil, nil]
+                             [@rcfile.username, @rcfile.password]
                            end
 
       raise ArgumentError.new("Please provide a username") unless username
