@@ -5,12 +5,13 @@ describe AppStore::Commands::Report do
     @cmd = AppStore::Commands::Report.new(mock(:null_object => true))
     @defaults = {
       :db => '/tmp/store.db',
-      :group? => false,
+      :summarize? => false,
       :to => nil,
       :from => nil,
       :country => nil,
       :no_header? => false,
-      :delimiter => "\t"
+      :delimiter => "\t",
+      :total? => false
     }
   end
 
@@ -80,7 +81,18 @@ Date|Country|Installs|Upgrades
 2009-09-09|GB|3|4
 EOF
     end
-    
+
+    it 'should output totals when the "totals" flag is specified' do
+      @store.should_receive(:counts). and_return(@data)
+      clip = stub(@defaults.merge(:total? => true))
+      @cmd.execute!(clip, [], @io)
+      @io.string.should == <<EOF
+Date\tCountry\tInstalls\tUpgrades
+2009-09-09\tUS\t1\t2
+2009-09-09\tGB\t3\t4
+Total\t-\t4\t6
+EOF
+    end
   end
 
   describe 'with :group option specified' do
@@ -99,7 +111,7 @@ EOF
     
     it 'should request grouped country data' do
       @store.should_receive(:country_counts).and_return(@data)
-      clip = stub(@defaults.merge(:group? => true))
+      clip = stub(@defaults.merge(:summarize? => true))
       @cmd.execute!(clip, [], @io)
       @io.string.should == <<EOF
 Country\tInstalls\tUpgrades
@@ -110,7 +122,7 @@ EOF
 
     it 'should suppress the header when requested' do
       @store.should_receive(:country_counts).and_return(@data)
-      clip = stub(@defaults.merge(:group? => true, :no_header? => true))
+      clip = stub(@defaults.merge(:summarize? => true, :no_header? => true))
       @cmd.execute!(clip, [], @io)
       @io.string.should == <<EOF
 US\t1\t2
@@ -120,12 +132,24 @@ EOF
 
     it 'should separate fields with the specified delimiter' do
       @store.should_receive(:country_counts).and_return(@data)
-      clip = stub(@defaults.merge(:group? => true, :delimiter => '|'))
+      clip = stub(@defaults.merge(:summarize? => true, :delimiter => '|'))
       @cmd.execute!(clip, [], @io)
       @io.string.should == <<EOF
 Country|Installs|Upgrades
 US|1|2
 GB|3|4
+EOF
+    end
+
+    it 'should output totals when the "totals" flag is specified' do
+      @store.should_receive(:country_counts).and_return(@data)
+      clip = stub(@defaults.merge(:summarize? => true, :total? => true))
+      @cmd.execute!(clip, [], @io)
+      @io.string.should == <<EOF
+Country\tInstalls\tUpgrades
+US\t1\t2
+GB\t3\t4
+Total\t4\t6
 EOF
     end
   end
@@ -161,6 +185,8 @@ EOF
         with('d', 'delimiter',
              :desc => 'The delimiter to use for output (normally TAB)',
              :default => "\t")
+      clip.should_receive(:flag).
+        with('o', 'total', :desc => 'Add totals at the end of the report')
 
       AppStore::Commands::Report.new(clip)
     end

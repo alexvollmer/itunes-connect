@@ -17,7 +17,8 @@ module AppStore::Commands
       c.flag('n', 'no-header', :desc => 'Suppress the column headers on output')
       c.opt('d', 'delimiter',
              :desc => 'The delimiter to use for output (normally TAB)',
-             :default => "\t")
+            :default => "\t")
+      c.flag('o', 'total', :desc => 'Add totals at the end of the report')
       @rcfile = rcfile
     end
 
@@ -31,25 +32,41 @@ module AppStore::Commands
         :country => opts.country
       }
 
-      if opts.group?
-        unless opts.no_header?
-          out.puts(%w(Country Installs Upgrades).join(opts.delimiter))
-        end
+      total_installs, total_upgrades = 0, 0
+        
+      unless opts.no_header?
+        out.puts([opts.summarize? ? nil : "Date",
+                  "Country",
+                  "Installs",
+                  "Upgrades"
+                 ].compact.join(opts.delimiter))
+      end
+
+      if opts.summarize?
         store.country_counts(params).each do |x|
           out.puts [x.country,
                     x.install_count,
                     x.update_count].join(opts.delimiter)
+          total_installs += x.install_count
+          total_upgrades += x.update_count
         end
       else
-        unless opts.no_header?
-          out.puts(%w(Date Country Installs Upgrades).join(opts.delimiter))
-        end
         store.counts(params).each do |x|
           out.puts [x.report_date,
                     x.country,
                     x.install_count,
                     x.update_count].join(opts.delimiter)
+          total_installs += x.install_count
+          total_upgrades += x.update_count
         end
+      end
+
+      if opts.total?
+        out.puts ["Total",
+                  opts.summarize? ? nil : "-",
+                  total_installs,
+                  total_upgrades
+                 ].compact.join(opts.delimiter)
       end
       out.flush
     end
