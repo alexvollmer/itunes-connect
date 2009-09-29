@@ -115,7 +115,7 @@ module AppStore
 
       sql << " WHERE " unless clauses.empty?
       sql << clauses.join(" AND ") unless params.empty?
-      sql << " GROUP BY country, ORDER BY country"
+      sql << " GROUP BY country ORDER BY country"
 
       @db.execute(sql, *params).map do |row|
         OpenStruct.new({

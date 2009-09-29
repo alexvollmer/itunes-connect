@@ -16,7 +16,7 @@ class AppStore::Report
   # method) and I'll parse that sucker for you.
   def initialize(input)
     @data = Hash.new { |h,k| h[k] = { }}
-    input.each.each do |line|
+    input.each do |line|
       line.chomp!
       next if line =~ /^(Provider|$)/
       tokens = line.split(/\s+/)
