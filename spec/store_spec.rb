@@ -2,12 +2,12 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 require "sqlite3"
 require "tmpdir"
 
-describe AppStore::Store do
+describe ItunesConnect::Store do
 
   before(:each) do
     @tempdir = Dir.tmpdir
     @file = File.join(@tempdir, "store.db")
-    @store = AppStore::Store.new(@file)
+    @store = ItunesConnect::Store.new(@file)
     @today = Date.parse('9/9/2009')
   end
 
@@ -34,7 +34,7 @@ describe AppStore::Store do
       @store.add(@today - 1, 'GB', 6, 16)
       @store.add(@today, 'FR', 7, 17)
     end
-    
+
     it 'should return all rows with no constraints' do
       @store.counts.size.should == 5
     end
@@ -62,7 +62,7 @@ describe AppStore::Store do
                     :to => @today,
                     :country => 'US').size.should == 1
     end
-    
+
     it 'should return the correct fields' do
       record = @store.counts.first
       record.should be_respond_to(:report_date)
@@ -80,7 +80,7 @@ describe AppStore::Store do
       @store.add(@today - 1, 'GB', 6, 16)
       @store.add(@today, 'FR', 7, 17)
     end
-  
+
     it 'should return all countries with no constraints' do
       map = map_results_by_country(@store.country_counts)
       map.size.should == 3
@@ -98,14 +98,14 @@ describe AppStore::Store do
       map['US'].install_count.should == 21
       map['US'].update_count.should == 41
     end
-    
+
     it 'should respect the :to constraint' do
       r1 = map_results_by_country(@store.country_counts(:to => @today))
       r1.size.should == 3
       r1.keys.sort.should == %w(FR GB US)
       r1['GB'].install_count.should == 11
       r1['GB'].update_count.should == 31
-      
+
       r2 = map_results_by_country(@store.country_counts(:to => @today - 1))
       r2.size.should == 2
       r2.keys.sort.should == %w(GB US)
@@ -138,5 +138,5 @@ describe AppStore::Store do
   def map_results_by_country(results)
     Hash[*results.map { |result| [result.country, result] }.flatten]
   end
-  
+
 end

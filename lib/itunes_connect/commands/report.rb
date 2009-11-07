@@ -1,9 +1,9 @@
-require "appstore/rc_file"
-require "appstore/store"
+require "itunes_connect/rc_file"
+require "itunes_connect/store"
 
-module AppStore::Commands
+module ItunesConnect::Commands
   class Report                  # :nodoc:
-    def initialize(c, rcfile=AppStore::RcFile.default)
+    def initialize(c, rcfile=ItunesConnect::RcFile.default)
       c.opt('b', 'db', :desc => 'Dump report to sqlite DB at the given path')
       c.opt('c', 'country',
             :desc => 'A two-letter country code to filter results with')
@@ -25,7 +25,7 @@ module AppStore::Commands
     def execute!(opts, args=[], out=$stdout)
       db = opts.db || @rcfile.database || nil
       raise ArgumentError.new("Missing :db option") if db.nil?
-      store = AppStore::Store.new(db)
+      store = ItunesConnect::Store.new(db)
       params = {
         :to => opts.to,
         :from => opts.from,
@@ -33,7 +33,7 @@ module AppStore::Commands
       }
 
       total_installs, total_upgrades = 0, 0
-        
+
       unless opts.no_header?
         out.puts([opts.summarize? ? nil : "Date",
                   "Country",

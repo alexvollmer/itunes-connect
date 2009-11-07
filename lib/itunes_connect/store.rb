@@ -1,7 +1,7 @@
 require "sqlite3"
 require "ostruct"
 
-module AppStore
+module ItunesConnect
   # Represents a database stored on disk.
   class Store
     # Creates a new instance. If no database file exists at the given
@@ -41,7 +41,7 @@ module AppStore
     VALID_COUNT_OPTIONS = [:from, :to, :country]
     # Get counts optionally constrained by dates and/or country codes.
     # Available options are:
-    # <tt>:from</tt>:: The from date, defaults to the beginning 
+    # <tt>:from</tt>:: The from date, defaults to the beginning
     # <tt>:to</tt>:: The end date, defaults to now
     # <tt>:country</tt>:: The country code, defaults to <tt>nil</tt>
     # which means no country code restriction
@@ -85,7 +85,7 @@ module AppStore
 
     # Get summed counts by country, optionally constrained by dates
     # and/or country codes. Available options are:
-    # <tt>:from</tt>:: The from date, defaults to the beginning 
+    # <tt>:from</tt>:: The from date, defaults to the beginning
     # <tt>:to</tt>:: The end date, defaults to now
     # <tt>:country</tt>:: The country code, defaults to <tt>nil</tt>
     # which means no country code restriction
@@ -123,7 +123,7 @@ module AppStore
                          :install_count => row[1].to_i,
                          :update_count => row[2].to_i
                        })
-      end      
+      end
     end
   end
 end

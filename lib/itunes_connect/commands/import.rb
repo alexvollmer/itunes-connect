@@ -1,9 +1,9 @@
-require "appstore/rc_file"
-require "appstore/report"
+require "itunes_connect/rc_file"
+require "itunes_connect/report"
 
-module AppStore::Commands
+module ItunesConnect::Commands
   class Import                  # :nodoc:
-    def initialize(c, rcfile=AppStore::RcFile.default)
+    def initialize(c, rcfile=ItunesConnect::RcFile.default)
       c.opt('b', 'db', :desc => 'Dump report to sqlite DB at the given path')
       c.req('f', 'file', :desc => 'The file to import, - means standard in')
       @rcfile = rcfile
@@ -13,10 +13,10 @@ module AppStore::Commands
       db = opts.db || @rcfile.database || nil
       raise ArgumentError.new("Missing :db option") unless db
       raise ArgumentError.new("Missing :file option") if opts.file.nil?
-      store = AppStore::Store.new(db, opts.verbose?)
+      store = ItunesConnect::Store.new(db, opts.verbose?)
       input = opts.file == '-' ? $stdin : open(opts.file, 'r')
       count = 0
-      AppStore::Report.new(input).each do |entry|
+      ItunesConnect::Report.new(input).each do |entry|
         count += 1 if store.add(entry.date,
                                 entry.country,
                                 entry.install_count,

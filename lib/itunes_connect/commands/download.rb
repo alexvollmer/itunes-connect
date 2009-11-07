@@ -1,9 +1,9 @@
-require "appstore/rc_file"
-require "appstore/report"
+require "itunes_connect/rc_file"
+require "itunes_connect/report"
 
-module AppStore::Commands
+module ItunesConnect::Commands
   class Download                # :nodoc:
-    def initialize(c, rcfile=AppStore::RcFile.default)
+    def initialize(c, rcfile=ItunesConnect::RcFile.default)
       c.opt('u', 'username', :desc => 'iTunes Connect username')
       c.opt('p', 'password', :desc => 'iTunes Connect password')
       c.opt('d', 'date', :desc => 'Daily report date (MM/DD/YYYY format)',
@@ -27,7 +27,7 @@ module AppStore::Commands
 
       raise ArgumentError.new("Please provide a username") unless username
       raise ArgumentError.new("Please provide a password") unless password
-      
+
       if opts.db and opts.out
         raise ArgumentError.new("You can only specify :out or :db, not both")
       end
@@ -38,7 +38,7 @@ module AppStore::Commands
                                 "associated with them")
       end
 
-      connection = AppStore::Connection.new(username,
+      connection = ItunesConnect::Connection.new(username,
                                             password,
                                             opts.verbose?,
                                             opts.debug?)
@@ -52,9 +52,9 @@ module AppStore::Commands
 
       if db and StringIO === out
         $stdout.puts "Importing into database file: #{db}" if opts.verbose?
-        store = AppStore::Store.new(db, opts.verbose?)
+        store = ItunesConnect::Store.new(db, opts.verbose?)
         out.rewind
-        report = AppStore::Report.new(out)
+        report = ItunesConnect::Report.new(out)
         count = 0
         report.each do |entry|
           count += 1 if store.add(entry.date,

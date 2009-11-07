@@ -1,8 +1,8 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe AppStore::Commands::Report do
+describe ItunesConnect::Commands::Report do
   before(:each) do
-    @cmd = AppStore::Commands::Report.new(mock(:null_object => true))
+    @cmd = ItunesConnect::Commands::Report.new(mock(:null_object => true))
     @defaults = {
       :db => '/tmp/store.db',
       :summarize? => false,
@@ -17,8 +17,8 @@ describe AppStore::Commands::Report do
 
   describe 'with valid execution arguments' do
     before(:each) do
-      @store = mock(AppStore::Store)
-      AppStore::Store.should_receive(:new).
+      @store = mock(ItunesConnect::Store)
+      ItunesConnect::Store.should_receive(:new).
         with("/tmp/store.db").
         and_return(@store)
       @io = StringIO.new
@@ -27,9 +27,9 @@ describe AppStore::Commands::Report do
                     :install_count => 1, :update_count => 2),
                mock(:report_date => Date.parse('2009/09/09'), :country => 'GB',
                     :install_count => 3, :update_count => 4)
-              ] 
+              ]
     end
-    
+
     it 'should request counts with no options with no qualifiers' do
       @store.should_receive(:counts).and_return(@data)
       clip = stub(@defaults.merge(:db => '/tmp/store.db'))
@@ -97,8 +97,8 @@ EOF
 
   describe 'with :group option specified' do
     before(:each) do
-      @store = mock(AppStore::Store)
-      AppStore::Store.should_receive(:new).
+      @store = mock(ItunesConnect::Store)
+      ItunesConnect::Store.should_receive(:new).
         with('/tmp/store.db').
         and_return(@store)
 
@@ -108,7 +108,7 @@ EOF
                mock(:country => 'GB', :install_count => 3, :update_count => 4)
               ]
     end
-    
+
     it 'should request grouped country data' do
       @store.should_receive(:country_counts).and_return(@data)
       clip = stub(@defaults.merge(:summarize? => true))
@@ -188,8 +188,8 @@ EOF
       clip.should_receive(:flag).
         with('o', 'total', :desc => 'Add totals at the end of the report')
 
-      AppStore::Commands::Report.new(clip)
+      ItunesConnect::Commands::Report.new(clip)
     end
   end
-  
+
 end

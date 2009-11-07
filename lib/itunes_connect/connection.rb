@@ -6,13 +6,13 @@ require "rubygems"
 require "httpclient"
 require "nokogiri"
 
-module AppStore
+module ItunesConnect
 
   # Abstracts the iTunes Connect website.
   # Implementation inspired by
   # http://code.google.com/p/itunes-connect-scraper/
   class Connection
-    
+
     REPORT_PERIODS = ["Monthly Free", "Weekly", "Daily"]
 
     BASE_URL = 'https://itts.apple.com' # :nodoc:
@@ -43,7 +43,7 @@ module AppStore
     #
     # Any dates given that equal the current date or newer will cause
     # this method to raise an <tt>ArgumentError</tt>.
-    # 
+    #
     def get_report(date, out, period='Daily')
       date = Date.parse(date) if String === date
       if date >= Date.today
@@ -96,7 +96,7 @@ module AppStore
                  end
 
       raise ArgumentError, "No reports are available for that date" unless date_str
-                 
+
       report = get_content(report_url, {
                              report_type_name => 'Summary',
                              date_type_name => period,
@@ -117,7 +117,7 @@ module AppStore
       end
     end
 
-    private 
+    private
 
     def client
       @client ||= client = HTTPClient.new
@@ -153,7 +153,7 @@ module AppStore
         end
         puts "#{url} -> #{path}"
       end
-      
+
       @referer = url
       response.body.dump
     end

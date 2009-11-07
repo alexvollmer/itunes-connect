@@ -1,13 +1,13 @@
 require "yaml"
 
-class AppStore::RcFile          # :nodoc:
+class ItunesConnect::RcFile          # :nodoc:
 
   DEFAULT_RCFILE_PATH = File.expand_path("~/.itunesrc")
 
   def self.default
     self.new(DEFAULT_RCFILE_PATH)
   end
-  
+
   def initialize(path=DEFAULT_RCFILE_PATH)
     if File.exist?(path)
       @rc = YAML.load_file(path)

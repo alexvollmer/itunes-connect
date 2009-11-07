@@ -1,6 +1,6 @@
-require "appstore/commands"
+require "itunes_connect/commands"
 
-module AppStore::Commands
+module ItunesConnect::Commands
   class Help                    # :nodoc:
     def initialize(c)
       # nothing to do here
@@ -10,14 +10,14 @@ module AppStore::Commands
       if args.empty?
         out.puts "Available commands:"
         out.puts
-        AppStore::Commands.all.each do |cmd|
+        ItunesConnect::Commands.all.each do |cmd|
           out.printf("%-9s %s\n",
                      cmd.to_s.split('::').last.downcase,
                      cmd.new(Clip::Parser.new).description)
         end
       else
-        cli = AppStore::Commands.default_clip
-        cmd = AppStore::Commands.for_name(args.first, cli)
+        cli = ItunesConnect::Commands.default_clip
+        cmd = ItunesConnect::Commands.for_name(args.first, cli)
         cli.banner = "Command options for '#{cmd.class.to_s.split('::').last.downcase}':"
         raise ArgumentError.new("Unrecognized command '#{args.first}'") if cmd.nil?
         out.puts(cli.help)

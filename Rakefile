@@ -4,11 +4,11 @@ require 'rake'
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
-    gem.name = "appstore"
+    gem.name = "itunes-connect"
     gem.summary = %Q{Get your iTunes Connect Reports}
     gem.description = %Q{Programmatic and command-line access to iTunes Connect Reports}
     gem.email = "alex.vollmer@gmail.com"
-    gem.homepage = "http://github.com/alexvollmer/appstore"
+    gem.homepage = "http://github.com/alexvollmer/itunes-connect"
     gem.authors = ["Alex Vollmer"]
     gem.files = FileList["lib/**/*.rb", "bin/*", "spec/**/*"]
 
@@ -50,9 +50,9 @@ Rake::RDocTask.new do |rdoc|
   end
 
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "appstore #{version}"
+  rdoc.title = "itunes-connect #{version}"
   rdoc.main = 'README.rdoc'
   rdoc.rdoc_files.include('lib/*.rb')
   rdoc.rdoc_files.include('README.rdoc')
-  rdoc.rdoc_files.include('lib/appstore/*.rb')
+  rdoc.rdoc_files.include('lib/itunes_connect/*.rb')
 end

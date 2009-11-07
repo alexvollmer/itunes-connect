@@ -1,10 +1,10 @@
-require "appstore/commands/download"
-require "appstore/commands/import"
-require "appstore/commands/report"
-require "appstore/commands/help"
+require "itunes_connect/commands/download"
+require "itunes_connect/commands/import"
+require "itunes_connect/commands/report"
+require "itunes_connect/commands/help"
 require "clip"
 
-module AppStore::Commands       # :nodoc:
+module ItunesConnect::Commands       # :nodoc:
   class << self
     def for_name(name, clip)
       self.const_get(name.capitalize.to_sym).new(clip)
@@ -18,8 +18,8 @@ module AppStore::Commands       # :nodoc:
 
     def usage(msg)
       $stderr.puts msg if msg
-      $stderr.puts "USAGE: appstore [command] [options]"
-      AppStore::Commands.all.each do |cmd_cls|
+      $stderr.puts "USAGE: itunes_connect [command] [options]"
+      ItunesConnect::Commands.all.each do |cmd_cls|
         cli = Clip do |c|
           c.banner = "'#{cmd_cls.to_s.split('::').last.downcase}' command options:"
 

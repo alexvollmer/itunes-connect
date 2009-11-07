@@ -1,18 +1,18 @@
 #!/usr/bin/env ruby
 
-require "appstore"
+require "itunes_connect"
 require "clip"
 
-AppStore::Commands.usage("No command given") if ARGV.empty?
+ItunesConnect::Commands.usage("No command given") if ARGV.empty?
 
 case command_name = ARGV.shift
 when '--help', '-h'
   cli = Clip::Parser.new
-  AppStore::Commands::Help.new(cli).execute!(cli)
+  ItunesConnect::Commands::Help.new(cli).execute!(cli)
 else
-  cli = AppStore::Commands.default_clip
-  command = AppStore::Commands.for_name(command_name, cli)
-  AppStore::Commands.usage("Unrecognized command '#{command_name}'") if command.nil?
+  cli = ItunesConnect::Commands.default_clip
+  command = ItunesConnect::Commands.for_name(command_name, cli)
+  ItunesConnect::Commands.usage("Unrecognized command '#{command_name}'") if command.nil?
   begin
     cli.parse(ARGV)
     if cli.valid?

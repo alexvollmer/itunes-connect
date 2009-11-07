@@ -1,12 +1,12 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
-describe AppStore::Report do
+describe ItunesConnect::Report do
   describe 'when constructed with raw input' do
     before(:each) do
-      @report = AppStore::Report.new(read_fixture('fixtures/report.txt'))
+      @report = ItunesConnect::Report.new(read_fixture('fixtures/report.txt'))
       @today = Date.parse('8/31/2009')
     end
-    
+
     it 'should produce a correct "data" member field' do
       @report.data.should == {
         'US' => { :upgrade => 3, :install => 1, :date => @today },

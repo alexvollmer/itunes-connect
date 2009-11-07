@@ -1,8 +1,8 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
-describe AppStore::Commands::Download do
+describe ItunesConnect::Commands::Download do
   before(:each) do
-    @cmd = AppStore::Commands::Download.new(mock(:null_object => true),
+    @cmd = ItunesConnect::Commands::Download.new(mock(:null_object => true),
                                             mock(:username => nil,
                                                  :password => nil,
                                                  :database => nil))
@@ -17,11 +17,11 @@ describe AppStore::Commands::Download do
       :report => 'Daily'
     }
   end
-  
+
   describe 'with valid execution arguments' do
     before(:each) do
-      @connection = mock(AppStore::Connection)
-      AppStore::Connection.should_receive(:new).
+      @connection = mock(ItunesConnect::Connection)
+      ItunesConnect::Connection.should_receive(:new).
         with('dudeman', 'sekret', false, false).
         and_return(@connection)
     end
@@ -51,7 +51,7 @@ describe AppStore::Commands::Download do
       @connection.should_receive(:get_report).with(Date.today - 1, $stdout, 'Weekly')
       opts = stub(@defaults.merge({ :report => 'Weekly' }))
       @cmd.execute!(opts)
-    end    
+    end
 
     describe 'and the :db option is specified' do
       it 'should import the results into the DB' do
@@ -61,11 +61,11 @@ describe AppStore::Commands::Download do
           io.flush
         end
 
-        store = mock(AppStore::Store)
+        store = mock(ItunesConnect::Store)
         store.should_receive(:add).with(t, 'GB', 0, 1)
         store.should_receive(:add).with(t, 'AR', 0, 1)
         store.should_receive(:add).with(t, 'US', 1, 3)
-        AppStore::Store.should_receive(:new).
+        ItunesConnect::Store.should_receive(:new).
           with('/tmp/foobar.db', false).
           and_return(store)
 
@@ -85,7 +85,7 @@ describe AppStore::Commands::Download do
       lambda { @cmd.execute!(stub(@defaults.merge(:username => nil))) }.
         should raise_error(ArgumentError)
     end
-    
+
     it 'should reject getting both :out and :db options' do
       lambda do
         opts = stub(@defaults.merge(:db => '/tmp/foobar.db',
@@ -100,7 +100,7 @@ describe AppStore::Commands::Download do
         @cmd.execute!(opts)
       end.should raise_error(ArgumentError)
     end
-    
+
     it 'should reject requests to store monthly reports in the database' do
       lambda do
         opts = stub(@defaults.merge(:report => 'Monthly', :db => '/tmp/foo.db'))
@@ -133,8 +133,8 @@ describe AppStore::Commands::Download do
              :desc => 'Report type. One of "Daily", "Weekly", "Monthly"',
              :default => 'Daily')
 
-      AppStore::Commands::Download.new(clip)
+      ItunesConnect::Commands::Download.new(clip)
     end
   end
-  
+
 end
