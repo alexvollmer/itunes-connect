@@ -1,4 +1,5 @@
 require "ostruct"
+require "tempfile"
 
 # This class transforms the raw input given in the constructor into a
 # series of objects representing each row. You can either get the
@@ -14,7 +15,8 @@ class ItunesConnect::Report
 
   # Give me an +IO+-like object (one that responds to the +each+
   # method) and I'll parse that sucker for you.
-  def initialize(input)
+  # If anything fails, the input file will be written to a temp file
+  def initialize(input, error_out=STDERR)
     @data = Hash.new { |h,k| h[k] = { }}
     input.each do |line|
       line.chomp!
@@ -30,6 +32,19 @@ class ItunesConnect::Report
         @data[country][:install] = count
       end
     end
+  rescue => e
+    name = Dir.tmpdir + "/itunes-connect-#{Date.today.strftime('%Y%m%d-%H%M%S')}"
+    input.rewind if input.respond_to? :rewind
+    open(name, "w") do |f|
+      f.puts "ERROR"
+      e.backtrace.each { |line| f.puts line }
+      f.puts "-" * 80
+      input.each { |line| f.puts line }
+    end
+    
+    error_out.puts "ERROR: #{e.message}"
+    error_out.puts "Saved input to #{name}"
+    raise e
   end
 
   # Yields each parsed data row to the given block. Each item yielded

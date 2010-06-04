@@ -1,0 +1,5 @@
+Provider	Provider Country	Vendor Identifier	UPC	ISRC	Artist / Show	Title / Episode / Season	Label/Studio/Network	Product Type Identifier	Units	Royalty Price	Begin Date	End Date	Customer Currency	Country Code	Royalty Currency	Preorder	Season Pass	ISAN	Apple Identifier	Customer Price	CMA	Asset/Content Flavor	Vendor Offer Code	Grid	Promo Code	Parent Identifier
+APPLE	US	1001	 	 	MyCompany	MyApp	 	1	1	.97	06/01/2010	06/01/2010	EUR	FR	EUR	 	 	123456789	1.59	 	 	 	 	 	 
+APPLE	US	1001	 	 	MyCompany	MyApp	 	1	4	1.4	06/01/2010	06/01/2010	USD	US	USD	 	 	123456789	1.99	 	 	 	 	 	 
+APPLE	US	1001	 	 	MyCompany	MyApp	 	1	1	.72	06/01/2010	06/01/2010	GBP	GB	GBP	 	 	123456789	1.19	 	 	 	 	 	 
+APPLE	US	1001	 	 	MyCompany	MyApp	 	1	2	.97	06/01/2010	06/01/2010	SEK	SE	EUR	 	 	123456789	15
