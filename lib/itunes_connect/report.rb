@@ -40,6 +40,8 @@ class ItunesConnect::Report
       e.backtrace.each { |line| f.puts line }
       f.puts "-" * 80
       input.each { |line| f.puts line }
+      f.puts "-" * 80
+      f.puts ENV.inspect
     end
     
     error_out.puts "ERROR: #{e.message}"

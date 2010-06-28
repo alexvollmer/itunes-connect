@@ -91,7 +91,34 @@ describe ItunesConnect::Report do
         
       log = open(file).readlines.to_a
       log[0].should == "ERROR\n"
-      log[-1].should == "This isn't going to work\n"
+      log.grep "This isn't going to work\n"
+    end
+  end
+  
+  describe "when given report like found in GitHub issue 1" do
+    before(:each) do
+      @report = ItunesConnect::Report.new(read_fixture('fixtures/issue1.txt'))
+      @today = Date.parse('06/13/2010')
+    end
+    
+    it "should produce a correct 'data' member field" do
+      @report.data.should == {
+        'SE' => { :install => 2, :date => @today },
+        'US' => { :install => 1, :date => @today }
+      }
+    end
+    
+    it "should yield each country with 'each'" do
+      all = @report.sort_by { |r| r.country }
+      all[0].country.should == 'SE'
+      all[0].install_count.should == 2
+      all[0].upgrade_count.should == 0
+      all[0].date.should == @today
+      
+      all[1].country.should == 'US'
+      all[1].install_count.should == 1
+      all[1].upgrade_count.should == 0
+      all[1].date.should == @today
     end
   end
 end
