@@ -3,6 +3,7 @@ require "tempfile"
 require "yaml"
 require "zlib"
 require "rubygems"
+gem 'mechanize'
 require "mechanize"
 
 # mechanize monkey patch
@@ -15,7 +16,7 @@ begin
       class BodyDecodingHandler
         alias :orig_handle :handle
 
-        def handle(ctx, options)
+        def handle(ctx, options = {})
           response = options[:response]
           encoding = response['Content-Encoding'] || ''
           response['Content-Encoding'] = 'gzip' if encoding.downcase == 'agzip'
@@ -101,7 +102,7 @@ module ItunesConnect
       # determine available download options
       @select_name = period == 'Daily' ? ID_SELECT_DAILY : ID_SELECT_WEEKLY
       options = report_page.search(".//select[@id='#{@select_name}']/option")
-      options = options.collect { |i| i['value'] } if options
+      options = options.collect { |i| i ? i['value'] : nil } if options
       raise "unable to determine daily report options" unless options
 
       debug_msg("options: #{options.inspect}")
@@ -198,9 +199,20 @@ module ItunesConnect
 
     # log in and navigate to the reporting interface
     def login
-      client.get(LOGIN_URL) do |login_page|
+      debug_msg("Logging in")
 
-        page = login_page.form_with(:name => 'appleConnectForm') do |form|
+      page = client.get(LOGIN_URL)
+
+      # TODO: does expired session page occur before or after log in?
+      expired = page.body.match(/Your session has expired.*?href\="(.*?)"/)
+      if expired
+        debug_msg("expired session detected")
+        page = client.get(expired[1])
+       # next  # retry login
+      end
+
+      while true do
+        page = page.form_with(:name => 'appleConnectForm') do |form|
           raise "login form not found" unless form
 
           form['theAccountName'] = @username
@@ -212,10 +224,26 @@ module ItunesConnect
 
         dump(client, page)
 
-        # Click the sales and trends link
-        page2 = client.click(page.link_with(:text => /Sales and Trends/))
-        dump(client, page2)
+        break  # done logging in
       end
+
+      # skip past new license available notifications
+      new_license = page.body.match(/License Agreement Update/)
+      if new_license
+        debug_msg("new license detected, skipping")
+        submit_parameter = page.body.match(/input.*?type\="image".*?name="(.*?)"/)[1] rescue nil
+        raise "could not determine how to skip new license agreement" unless submit_parameter
+        page = page.form_with(:name => 'mainForm') do |form|
+          form["#{submit_parameter}.x"] = 40
+          form["#{submit_parameter}.y"] = 18
+        end.submit
+      end
+
+      # Click the sales and trends link
+      sales_link = page.link_with(:text => /Sales and Trends/)
+      raise "Sales and Trends link not found" unless sales_link
+      page2 = client.click(sales_link)
+      dump(client, page2)
 
       @logged_in = true
     end
