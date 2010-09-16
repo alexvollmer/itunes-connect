@@ -3,8 +3,28 @@ require "tempfile"
 require "yaml"
 require "zlib"
 require "rubygems"
-require "httpclient"
-require "nokogiri"
+require "mechanize"
+
+# mechanize monkey patch
+# handle Content-Encoding of 'agzip'
+begin
+  require 'mechanize/chain/body_decoding_handler'
+
+  class Mechanize
+    class Chain
+      class BodyDecodingHandler
+        alias :orig_handle :handle
+
+        def handle(ctx, options)
+          response = options[:response]
+          encoding = response['Content-Encoding'] || ''
+          response['Content-Encoding'] = 'gzip' if encoding.downcase == 'agzip'
+          orig_handle(ctx, options)
+        end
+      end
+    end
+  end
+end
 
 module ItunesConnect
 
@@ -13,16 +33,11 @@ module ItunesConnect
   # http://code.google.com/p/itunes-connect-scraper/
   class Connection
 
-    REPORT_PERIODS = ["Monthly Free", "Weekly", "Daily"]
+    REPORT_PERIODS = ["Weekly", "Daily"]
 
     BASE_URL = 'https://itunesconnect.apple.com'  # login base
-    REFERER_URL = 'https://reportingitc.apple.com/sales.faces'
-    REPORT0_URL = 'https://reportingitc.apple.com' # :nodoc:
-    REPORT1_URL = 'https://reportingitc.apple.com/vendor_default.faces'
-    REPORT2_URL = 'https://reportingitc.apple.com/subdashboard.faces'
-    REPORT3_URL = 'https://reportingitc.apple.com/sales.faces'
+    REPORT_URL = 'https://reportingitc.apple.com/sales.faces'
     LOGIN_URL = 'https://itunesconnect.apple.com/WebObjects/iTunesConnect.woa'
-      #'https://itts.apple.com/cgi-bin/WebObjects/Piano.woa' # :nodoc:
 
     # select ids:
     # theForm:datePickerSourceSelectElementSales (daily)
@@ -35,7 +50,8 @@ module ItunesConnect
     def initialize(username, password, verbose=false, debug=false)
       @username, @password = username, password
       @verbose = verbose
-      @debug = true #debug
+      @debug = debug
+      @current_period = "Daily"  # default period in reportingitc interface
     end
 
     def verbose?                # :nodoc:
@@ -44,6 +60,10 @@ module ItunesConnect
 
     def debug?                  # :nodoc:
       !!@debug
+    end
+
+    def logged_in?              # :nodoc:
+      !!@logged_in
     end
 
     # Retrieve a report from iTunes Connect. This method will return the
@@ -56,166 +76,181 @@ module ItunesConnect
     # Any dates given that equal the current date or newer will cause
     # this method to raise an <tt>ArgumentError</tt>.
     #
-    def get_report(date, out, period='Daily')
+    def get_report(date, out, period = 'Daily')
       date = Date.parse(date) if String === date
       if date >= Date.today
         raise ArgumentError, "You must specify a date before today"
       end
 
-      period = 'Monthly Free' if period == 'Monthly'
       unless REPORT_PERIODS.member?(period)
         raise ArgumentError, "'period' must be one of #{REPORT_PERIODS.join(', ')}"
       end
 
-      # grab the home page
-      doc = Nokogiri::HTML(get_content(LOGIN_URL))
-      login_path = (doc/"form/@action").to_s
+      login unless self.logged_in?
 
-      # login
-      # /WebObjects/iTunesConnect.woa/wo/0.0.9.3.3.2.1.1.3.1.1"
-      doc = Nokogiri::HTML(post_content(login_path, {
-                                         'theAccountName' => @username,
-                                         'theAccountPW' => @password,
-                                         '1.Continue.x' => '35',
-                                         '1.Continue.y' => '16',
-                                         'theAuxValue' => ''
-                                       }))
+      # fetch report
+      # TODO: can report_page be cached?
+      # TODO: check for 'Your session has timed out'
+      report_page = client.get(REPORT_URL)
+      dump(client, report_page)
 
-      report_url = doc.to_s.match(/href="(.*?)">.*?Sales and Trends/)
-      report_url = report_url ? report_url[1] : nil
+      # requested download date
+      date_str = date.strftime("%m/%d/%Y")
+      debug_msg("download date: #{date_str}")
 
-      raise "internal error: could not determine report url" unless report_url
+      # determine available download options
+      @select_name = period == 'Daily' ? ID_SELECT_DAILY : ID_SELECT_WEEKLY
+      options = report_page.search(".//select[@id='#{@select_name}']/option")
+      options = options.collect { |i| i['value'] } if options
+      raise "unable to determine daily report options" unless options
 
-      #report_url = (doc / "//*[@name='frmVendorPage']/@action").to_s
-      report_type_name = (doc / "//*[@id='selReportType']/@name").to_s
-      date_type_name = (doc / "//*[@id='selDateType']/@name").to_s
+      debug_msg("options: #{options.inspect}")
 
-      doc = Nokogiri::HTML(get_content(report_url))
+      # constrain download to available reports
+      available = options.find { |i| i <= date_str } ? true : false
 
-      #doc = Nokogiri::HTML(get_content(REPORT3_URL))
-
-      exit 0
-
-=begin
-      # handle first report form
-      doc = Nokogiri::HTML(get_content(report_url, {
-                                         report_type_name => 'Summary',
-                                         date_type_name => period,
-                                         'hiddenDayOrWeekSelection' => period,
-                                         'hiddenSubmitTypeName' => 'ShowDropDown'
-                                       }))
-=end
-
-      report_url = (doc / "//*[@name='frmVendorPage']/@action").to_s
-      report_type_name = (doc / "//*[@id='selReportType']/@name").to_s
-      date_type_name = (doc / "//*[@id='selDateType']/@name").to_s
-      date_name = (doc / "//*[@id='dayorweekdropdown']/@name").to_s
-
-      # now get the report
-      date_str = case period
-                 when 'Daily'
-                   date.strftime("%m/%d/%Y")
-                 when 'Weekly', 'Monthly Free'
-                   date = (doc / "//*[@id='dayorweekdropdown']/option").find do |d|
-                     d1, d2 = d.text.split(' To ').map { |x| Date.parse(x) }
-                     date >= d1 and date <= d2
-                   end[:value] rescue nil
-                 end
-
-      raise ArgumentError, "No reports are available for that date" unless date_str
-
-      date_selection_name = period == "Daily" ? ID_SELECT_DAILY : ID_SELECT_WEEKLY
-
-      report = get_content(report_url, {
-                             report_type_name => 'Summary',
-                             date_type_name => period,
-                             date_name => date_str,
-                             'download' => 'Download',
-                             date_selection_name => date_str,
-                             'hiddenSubmitTypeName' => 'Download'
-                           })
-
-      begin
-        gunzip = Zlib::GzipReader.new(StringIO.new(report))
-        out << gunzip.read
-      rescue => e
-        doc = Nokogiri::HTML(report)
-        msg = (doc / "//font[@id='iddownloadmsg']").text.strip
-        msg = e.message if msg == ""
-        $stderr.puts "Unable to download the report, reason:"
-        $stderr.puts msg
+      unless available
+        raise ArgumentError, "No #{period} reports are available for #{date_str}"
       end
+
+      # select report period to download:
+      # daily:
+      # AJAXREQUEST	theForm:j_id_jsp_4933398_2
+      # theForm:j_id_jsp_4933398_7	theForm:j_id_jsp_4933398_7 
+      # weekly:
+      # AJAXREQUEST	theForm:j_id_jsp_4933398_2
+      # theForm:j_id_jsp_4933398_22	theForm:j_id_jsp_4933398_22
+
+      # get ajax parameter name for Daily/Weekly (<a> id)
+      report_period_link = report_page.link_with(:text => /#{period}/)
+      @report_period_id = report_period_link.node['id']
+      raise "could not determine form period AJAX parameter" unless @report_period_id
+
+      # get ajax parameter name from <select> onchange attribute
+      # 'parameters':{'theForm:j_id_jsp_4933398_30':'theForm:j_id_jsp_4933398_30'}
+      report_date_select = report_page.search(".//select[@id='#{@select_name}']")
+      @report_date_id = report_date_select[0]['onchange'].match(/parameters':\{'(.*?)'/)[1] rescue nil
+      raise "could not determine form date AJAX parameter" unless @report_date_id
+      
+      # get ajax parameter name for AJAXREQUEST (<a> id)
+      # AJAX.Submit('theForm:j_id_jsp_4933398_2'
+      @ajax_id = report_page.body.match(/AJAX\.Submit\('([^\']+)'/)[1] rescue nil
+      raise "could not determine form AJAX id" unless @ajax_id
+
+      if @current_period != period
+        # change report period (Weekly/Daily)
+        change_report(report_page, date_str, @report_period_id => @report_period_id)
+        @current_period = period
+      end
+
+      page = change_report(report_page, date_str, @report_date_id => @report_date_id)
+
+      # after selecting report type, recheck if selection is available.
+      # (selection options exist even when the report isn't available, so
+      #  we need to do another check here)
+      dump(client, page)
+      available = !page.body.match(/There is no report available for this selection/)
+      unless available
+        raise ArgumentError, "No #{period} reports are available for #{date_str}"
+      end
+
+      # download the report
+      page = report_page.form_with(:name => 'theForm') do |form|
+        form['theForm:xyz'] = 'notnormal'
+        form['theForm:downloadLabel2'] = 'theForm:downloadLabel2'
+        form[@select_name] = date_str
+
+        form.delete_field!('AJAXREQUEST')
+        form.delete_field!(@report_period_id)
+        form.delete_field!(@report_date_id)
+
+        debug_form(form)
+      end.submit
+
+      dump(client, page)
+      report = page.body.to_s
+      debug_msg("report is #{report.length} bytes")
+      out << report
+      report
     end
 
     private
 
+    def debug_msg(message)
+      return unless self.debug?
+      puts message
+    end
+
+    def change_report(report_page, date_str, params = {})
+      page = report_page.form_with(:name => 'theForm') do |form|
+        form.delete_field!(@report_period_id)
+        form.delete_field!(@report_date_id)
+
+        params.each { |k,v| form[k] = v }
+
+        form['AJAXREQUEST'] = @ajax_id
+        form['theForm:xyz'] = 'notnormal'
+        form[@select_name] = date_str
+
+        debug_form(form)
+      end.submit
+    end
+
+    # log in and navigate to the reporting interface
+    def login
+      client.get(LOGIN_URL) do |login_page|
+
+        page = login_page.form_with(:name => 'appleConnectForm') do |form|
+          raise "login form not found" unless form
+
+          form['theAccountName'] = @username
+          form['theAccountPW'] = @password
+          form['1.Continue.x'] = '35'
+          form['1.Continue.y'] = '16'
+          form['theAuxValue'] = ''
+        end.submit
+
+        dump(client, page)
+
+        # Click the sales and trends link
+        page2 = client.click(page.link_with(:text => /Sales and Trends/))
+        dump(client, page2)
+      end
+
+      @logged_in = true
+    end
+
     def client
       return @client if @client
-      @client = HTTPClient.new
-      if self.debug?
-        cookie_path = File.join(Dir.tmpdir, "cookie_store.dat")
-        client.set_cookie_store(cookie_path)
-        puts "cookie store path: #{cookie_path}"
-      end
+      @client = Mechanize.new
+      @client.user_agent_alias = 'Mac FireFox'
       @client
     end
 
-    def post_content(uri, query=nil, headers={ })
-      method_content('post', uri, query, headers)
+    # dump state information to a file (debugging)
+    def dump(a, page)
+      return unless self.debug?
+
+      url = a.current_page.uri.request_uri
+      puts "current page: #{url}"
+
+      md5 = Digest::MD5.new; md5 << url; md5 << Time.now.to_s
+      path = File.join(Dir.tmpdir, md5.to_s + ".html")
+      out = open(path, "w") do |f|
+        f << "Current page: #{url}"
+        f << "Headers: #{page.header}"
+        f << page.body
+      end
+
+      puts "#{url} -> #{path}"
     end
 
-    def get_content(uri, query=nil, headers={ })
-      method_content('get', uri, query, headers)
-    end
+    def debug_form(form)
+      return unless self.debug?
 
-    def method_content(method, uri, query=nil, headers={ })
-
-      if @referer
-        headers = {
-          'Referer' => @referer,
-          'User-Agent' => 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_8; en-us) AppleWebKit/531.9 (KHTML, like Gecko) Version/4.0.3 Safari/531.9'
-        }.merge(headers)
-      end
-      url = case uri
-            when /^https?:\/\//
-              uri
-            else
-              BASE_URL + uri
-            end
-
-      if self.debug?
-        puts "#{method} #{url} with #{query.inspect}"
-        puts "referer: #{@referer}"
-      end
-
-      response = client.send(method, url, query, headers)
-      p response.status
-
-      if self.debug?
-        md5 = Digest::MD5.new; md5 << url; md5 << Time.now.to_s
-        path = File.join(Dir.tmpdir, md5.to_s + ".html")
-        out = open(path, "w") do |f|
-          f << "Status: #{response.status}\n"
-          f << response.header.all.map do |name, value|
-            "#{name}: #{value}"
-          end.join("\n")
-          f << "\n\n"
-          f << response.body.dump
-        end
-        puts "#{url} -> #{path}"
-        
-        @client.save_cookie_store
-      end
-
-      #response = method_content(method, response.
-      if response.status == 302
-        # redirect
-        location = response.header['Location'].first
-        puts "redirecting to #{location}" if self.debug?
-        response_body = method_content(method, location)
-      else
-        @referer = url if response.status == 200
-        response.body.dump
+      puts "\nsubmitting form:"
+      form.keys.each do |key|
+        puts "#{key}: #{form[key]}"
       end
     end
 
