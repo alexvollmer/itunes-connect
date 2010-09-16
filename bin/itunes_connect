@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
-require "itunes_connect"
+$:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+require 'itunes_connect'
 require "clip"
 
 ItunesConnect::Commands.usage("No command given") if ARGV.empty?

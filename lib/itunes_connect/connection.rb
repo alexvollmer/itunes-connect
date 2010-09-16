@@ -15,15 +15,27 @@ module ItunesConnect
 
     REPORT_PERIODS = ["Monthly Free", "Weekly", "Daily"]
 
-    BASE_URL = 'https://itts.apple.com' # :nodoc:
-    REFERER_URL = 'https://itts.apple.com/cgi-bin/WebObjects/Piano.woa' # :nodoc:
+    BASE_URL = 'https://itunesconnect.apple.com'  # login base
+    REFERER_URL = 'https://reportingitc.apple.com/sales.faces'
+    REPORT0_URL = 'https://reportingitc.apple.com' # :nodoc:
+    REPORT1_URL = 'https://reportingitc.apple.com/vendor_default.faces'
+    REPORT2_URL = 'https://reportingitc.apple.com/subdashboard.faces'
+    REPORT3_URL = 'https://reportingitc.apple.com/sales.faces'
+    LOGIN_URL = 'https://itunesconnect.apple.com/WebObjects/iTunesConnect.woa'
+      #'https://itts.apple.com/cgi-bin/WebObjects/Piano.woa' # :nodoc:
+
+    # select ids:
+    # theForm:datePickerSourceSelectElementSales (daily)
+    # theForm:weekPickerSourceSelectElement  (weekly)
+    ID_SELECT_DAILY = "theForm:datePickerSourceSelectElementSales"
+    ID_SELECT_WEEKLY = "theForm:weekPickerSourceSelectElement"
 
     # Create a new instance with the username and password used to sign
     # in to the iTunes Connect website
     def initialize(username, password, verbose=false, debug=false)
       @username, @password = username, password
       @verbose = verbose
-      @debug = debug
+      @debug = true #debug
     end
 
     def verbose?                # :nodoc:
@@ -56,22 +68,35 @@ module ItunesConnect
       end
 
       # grab the home page
-      doc = Nokogiri::HTML(get_content(REFERER_URL))
+      doc = Nokogiri::HTML(get_content(LOGIN_URL))
       login_path = (doc/"form/@action").to_s
 
       # login
-      doc = Nokogiri::HTML(get_content(login_path, {
+      # /WebObjects/iTunesConnect.woa/wo/0.0.9.3.3.2.1.1.3.1.1"
+      doc = Nokogiri::HTML(post_content(login_path, {
                                          'theAccountName' => @username,
                                          'theAccountPW' => @password,
-                                         '1.Continue.x' => '36',
-                                         '1.Continue.y' => '17',
+                                         '1.Continue.x' => '35',
+                                         '1.Continue.y' => '16',
                                          'theAuxValue' => ''
                                        }))
 
-      report_url = (doc / "//*[@name='frmVendorPage']/@action").to_s
+      report_url = doc.to_s.match(/href="(.*?)">.*?Sales and Trends/)
+      report_url = report_url ? report_url[1] : nil
+
+      raise "internal error: could not determine report url" unless report_url
+
+      #report_url = (doc / "//*[@name='frmVendorPage']/@action").to_s
       report_type_name = (doc / "//*[@id='selReportType']/@name").to_s
       date_type_name = (doc / "//*[@id='selDateType']/@name").to_s
 
+      doc = Nokogiri::HTML(get_content(report_url))
+
+      #doc = Nokogiri::HTML(get_content(REPORT3_URL))
+
+      exit 0
+
+=begin
       # handle first report form
       doc = Nokogiri::HTML(get_content(report_url, {
                                          report_type_name => 'Summary',
@@ -79,6 +104,8 @@ module ItunesConnect
                                          'hiddenDayOrWeekSelection' => period,
                                          'hiddenSubmitTypeName' => 'ShowDropDown'
                                        }))
+=end
+
       report_url = (doc / "//*[@name='frmVendorPage']/@action").to_s
       report_type_name = (doc / "//*[@id='selReportType']/@name").to_s
       date_type_name = (doc / "//*[@id='selDateType']/@name").to_s
@@ -97,12 +124,14 @@ module ItunesConnect
 
       raise ArgumentError, "No reports are available for that date" unless date_str
 
+      date_selection_name = period == "Daily" ? ID_SELECT_DAILY : ID_SELECT_WEEKLY
+
       report = get_content(report_url, {
                              report_type_name => 'Summary',
                              date_type_name => period,
                              date_name => date_str,
                              'download' => 'Download',
-                             'hiddenDayOrWeekSelection' => date_str,
+                             date_selection_name => date_str,
                              'hiddenSubmitTypeName' => 'Download'
                            })
 
@@ -112,19 +141,35 @@ module ItunesConnect
       rescue => e
         doc = Nokogiri::HTML(report)
         msg = (doc / "//font[@id='iddownloadmsg']").text.strip
+        msg = e.message if msg == ""
         $stderr.puts "Unable to download the report, reason:"
-        $stderr.puts msg.strip
+        $stderr.puts msg
       end
     end
 
     private
 
     def client
-      @client ||= client = HTTPClient.new
+      return @client if @client
+      @client = HTTPClient.new
+      if self.debug?
+        cookie_path = File.join(Dir.tmpdir, "cookie_store.dat")
+        client.set_cookie_store(cookie_path)
+        puts "cookie store path: #{cookie_path}"
+      end
+      @client
+    end
+
+    def post_content(uri, query=nil, headers={ })
+      method_content('post', uri, query, headers)
     end
 
     def get_content(uri, query=nil, headers={ })
-      $stdout.puts "Querying #{uri} with #{query.inspect}" if self.debug?
+      method_content('get', uri, query, headers)
+    end
+
+    def method_content(method, uri, query=nil, headers={ })
+
       if @referer
         headers = {
           'Referer' => @referer,
@@ -138,7 +183,13 @@ module ItunesConnect
               BASE_URL + uri
             end
 
-      response = client.get(url, query, headers)
+      if self.debug?
+        puts "#{method} #{url} with #{query.inspect}"
+        puts "referer: #{@referer}"
+      end
+
+      response = client.send(method, url, query, headers)
+      p response.status
 
       if self.debug?
         md5 = Digest::MD5.new; md5 << url; md5 << Time.now.to_s
@@ -152,10 +203,20 @@ module ItunesConnect
           f << response.body.dump
         end
         puts "#{url} -> #{path}"
+        
+        @client.save_cookie_store
       end
 
-      @referer = url
-      response.body.dump
+      #response = method_content(method, response.
+      if response.status == 302
+        # redirect
+        location = response.header['Location'].first
+        puts "redirecting to #{location}" if self.debug?
+        response_body = method_content(method, location)
+      else
+        @referer = url if response.status == 200
+        response.body.dump
+      end
     end
 
   end
