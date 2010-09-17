@@ -199,19 +199,11 @@ module ItunesConnect
 
     # log in and navigate to the reporting interface
     def login
-      debug_msg("Logging in")
-
+      debug_msg("getting login page")
       page = client.get(LOGIN_URL)
 
-      # TODO: does expired session page occur before or after log in?
-      expired = page.body.match(/Your session has expired.*?href\="(.*?)"/)
-      if expired
-        debug_msg("expired session detected")
-        page = client.get(expired[1])
-       # next  # retry login
-      end
-
       while true do
+        debug_msg("logging in")
         page = page.form_with(:name => 'appleConnectForm') do |form|
           raise "login form not found" unless form
 
@@ -223,6 +215,14 @@ module ItunesConnect
         end.submit
 
         dump(client, page)
+
+        # 'session expired' message sometimes appears after logging in. weird.
+        expired = page.body.match(/Your session has expired.*?href\="(.*?)"/)
+        if expired
+          debug_msg("expired session detected, retrying login")
+          page = client.get(expired[1])
+          next  # retry login
+        end
 
         break  # done logging in
       end
