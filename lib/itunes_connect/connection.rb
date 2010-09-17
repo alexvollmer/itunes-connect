@@ -29,6 +29,8 @@ end
 
 module ItunesConnect
 
+  NETWORK_TIMEOUT = 60  # seconds
+
   # Abstracts the iTunes Connect website.
   # Implementation inspired by
   # http://code.google.com/p/itunes-connect-scraper/
@@ -252,6 +254,8 @@ module ItunesConnect
     def client
       return @client if @client
       @client = Mechanize.new
+      @client.read_timeout = NETWORK_TIMEOUT
+      @client.open_timeout = NETWORK_TIMEOUT
       @client.user_agent_alias = 'Mac FireFox'
       @client
     end
