@@ -90,10 +90,8 @@ module ItunesConnect
       login unless self.logged_in?
 
       # fetch report
-      # TODO: can report_page be cached?
-      # TODO: check for 'Your session has timed out'
-      report_page = client.get(REPORT_URL)
-      dump(client, report_page)
+      # (cache report page)
+      fetch_report_page unless @report_page
 
       # requested download date
       date_str = date.strftime("%m/%d/%Y")
@@ -101,7 +99,7 @@ module ItunesConnect
 
       # determine available download options
       @select_name = period == 'Daily' ? ID_SELECT_DAILY : ID_SELECT_WEEKLY
-      options = report_page.search(".//select[@id='#{@select_name}']/option")
+      options = @report_page.search(".//select[@id='#{@select_name}']/option")
       options = options.collect { |i| i ? i['value'] : nil } if options
       raise "unable to determine daily report options" unless options
 
@@ -114,37 +112,25 @@ module ItunesConnect
         raise ArgumentError, "No #{period} reports are available for #{date_str}"
       end
 
-      # select report period to download:
-      # daily:
-      # AJAXREQUEST	theForm:j_id_jsp_4933398_2
-      # theForm:j_id_jsp_4933398_7	theForm:j_id_jsp_4933398_7 
-      # weekly:
-      # AJAXREQUEST	theForm:j_id_jsp_4933398_2
-      # theForm:j_id_jsp_4933398_22	theForm:j_id_jsp_4933398_22
-
       # get ajax parameter name for Daily/Weekly (<a> id)
-      report_period_link = report_page.link_with(:text => /#{period}/)
+      report_period_link = @report_page.link_with(:text => /#{period}/)
       @report_period_id = report_period_link.node['id']
       raise "could not determine form period AJAX parameter" unless @report_period_id
 
       # get ajax parameter name from <select> onchange attribute
       # 'parameters':{'theForm:j_id_jsp_4933398_30':'theForm:j_id_jsp_4933398_30'}
-      report_date_select = report_page.search(".//select[@id='#{@select_name}']")
+      report_date_select = @report_page.search(".//select[@id='#{@select_name}']")
       @report_date_id = report_date_select[0]['onchange'].match(/parameters':\{'(.*?)'/)[1] rescue nil
       raise "could not determine form date AJAX parameter" unless @report_date_id
-      
-      # get ajax parameter name for AJAXREQUEST (<a> id)
-      # AJAX.Submit('theForm:j_id_jsp_4933398_2'
-      @ajax_id = report_page.body.match(/AJAX\.Submit\('([^\']+)'/)[1] rescue nil
-      raise "could not determine form AJAX id" unless @ajax_id
 
+      # select report period to download (Weekly/Daily)
       if @current_period != period
-        # change report period (Weekly/Daily)
-        change_report(report_page, date_str, @report_period_id => @report_period_id)
+        change_report(@report_page, date_str, @report_period_id => @report_period_id)
         @current_period = period
       end
 
-      page = change_report(report_page, date_str, @report_date_id => @report_date_id)
+      # select report date
+      page = change_report(@report_page, date_str, @report_date_id => @report_date_id)
 
       # after selecting report type, recheck if selection is available.
       # (selection options exist even when the report isn't available, so
@@ -156,7 +142,7 @@ module ItunesConnect
       end
 
       # download the report
-      page = report_page.form_with(:name => 'theForm') do |form|
+      page = @report_page.form_with(:name => 'theForm') do |form|
         form['theForm:xyz'] = 'notnormal'
         form['theForm:downloadLabel2'] = 'theForm:downloadLabel2'
         form[@select_name] = date_str
@@ -186,6 +172,7 @@ module ItunesConnect
       page = report_page.form_with(:name => 'theForm') do |form|
         form.delete_field!(@report_period_id)
         form.delete_field!(@report_date_id)
+        form.delete_field!('theForm:downloadLabel2')
 
         params.each { |k,v| form[k] = v }
 
@@ -195,6 +182,19 @@ module ItunesConnect
 
         debug_form(form)
       end.submit
+    end
+
+    # fetch main report page (sales.faces)
+    def fetch_report_page 
+      @report_page = client.get(REPORT_URL)
+      dump(client, @report_page)
+            
+      # get ajax parameter name for AJAXREQUEST (<a> id)
+      # AJAX.Submit('theForm:j_id_jsp_4933398_2'
+      @ajax_id = @report_page.body.match(/AJAX\.Submit\('([^\']+)'/)[1] rescue nil
+      raise "could not determine form AJAX id" unless @ajax_id
+
+      @report_page
     end
 
     # log in and navigate to the reporting interface
@@ -245,6 +245,7 @@ module ItunesConnect
       page2 = client.click(sales_link)
       dump(client, page2)
 
+      @report_page = nil  # clear any cached report page
       @logged_in = true
     end
 
