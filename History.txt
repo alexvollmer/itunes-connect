@@ -1,0 +1,5 @@
+== 0.10.0 / 2010-09-22
+
+* updated to work with latest itunes connect web interface
+* now using mechanize instead of httpclient
+* fixes for store.rb
