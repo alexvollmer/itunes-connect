@@ -186,16 +186,21 @@ module ItunesConnect
       end.submit
     end
 
+    # get ajax id from the given page.
+    # used to set AJAXREQUEST parameter.
+    # example html: AJAX.Submit('theForm:j_id_jsp_4933398_2'
+    def get_ajax_id(page)
+      ajax_id = page.body.match(/AJAX\.Submit\('([^\']+)'/)[1] rescue nil
+      raise "could not determine form AJAX id" unless ajax_id
+      ajax_id
+    end
+
     # fetch main report page (sales.faces)
     def fetch_report_page 
       @report_page = client.get(REPORT_URL)
       dump(client, @report_page)
             
-      # get ajax parameter name for AJAXREQUEST (<a> id)
-      # AJAX.Submit('theForm:j_id_jsp_4933398_2'
-      @ajax_id = @report_page.body.match(/AJAX\.Submit\('([^\']+)'/)[1] rescue nil
-      raise "could not determine form AJAX id" unless @ajax_id
-
+      @ajax_id = get_ajax_id(@report_page)
       @report_page
     end
 
@@ -246,6 +251,21 @@ module ItunesConnect
       raise "Sales and Trends link not found" unless sales_link
       page2 = client.click(sales_link)
       dump(client, page2)
+
+      # submit body onload form
+      # setUpdefaultVendorNavigation()
+      debug_msg("setting default vendor navigation")
+      page_param = page2.body.match(/parameters':\{'(.*?)'/)[1] rescue nil
+      raise "could not determine defaultVendorPage parameter" unless page_param
+
+      page2.form_with(:name => 'defaultVendorPage') do |form|
+        form['AJAXREQUEST'] = get_ajax_id(page2)
+        form[page_param] = page_param
+
+        debug_form(form)
+      end.submit
+
+      debug_msg("finished login")
 
       @report_page = nil  # clear any cached report page
       @logged_in = true
