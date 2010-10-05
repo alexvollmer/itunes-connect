@@ -1,3 +1,7 @@
+== 0.11.0 / 2010-10-05
+
+* fix for latest itunes connect interface - extra POST between login and report fetching needed. (setUpdefaultVendorNavigation())
+
 == 0.10.0 / 2010-09-22
 
 * updated to work with latest itunes connect web interface
