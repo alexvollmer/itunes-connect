@@ -85,7 +85,7 @@ module ItunesConnect
     # this method to raise an <tt>ArgumentError</tt>.
     #
     def get_report(date, out, period = 'Daily')
-      date = String === date ? Date.parse(date) : nil
+      date = String === date ? Date.strptime(date, "%m/%d/%Y") : nil
 
       unless REPORT_PERIODS.member?(period)
         raise ArgumentError, "'period' must be one of #{REPORT_PERIODS.join(', ')}"
@@ -231,17 +231,16 @@ module ItunesConnect
       end
 
       # skip past new license available notifications
-      new_license = page.body.match(/License Agreement Update/)
+      new_license = page.body.match(/Agreement Update/)
       if new_license
         raise("new license detected, aborting...") if self.abort_license? 
         #if acceptable continue
-        debug_msg("new license detected, skipping...")
-        submit_parameter = page.body.match(/input.*?type\="image".*?name="(.*?)"/)[1] rescue nil
-        raise "could not determine how to skip new license agreement" unless submit_parameter
-        page = page.form_with(:name => 'mainForm') do |form|
-          form["#{submit_parameter}.x"] = 40
-          form["#{submit_parameter}.y"] = 18
-        end.submit
+        debug_msg("agreement update detected, skipping")
+        next_url = page.body.match(/a href="(.*?)">\s*<img[^>]+src="\/itc\/images\/btn-continue.png"/)
+        raise "could not determine continue url" unless next_url
+        continue_link = page.link_with(:href => next_url[1])
+        raise "could not find continue link" unless continue_link
+        page = client.click(continue_link)
       end
 
       # Click the sales and trends link
