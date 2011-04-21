@@ -177,6 +177,7 @@ module ItunesConnect
         form['AJAXREQUEST'] = @ajax_id
         form['theForm:xyz'] = 'notnormal'
         form[@select_name] = date_str
+        form['javax.faces.ViewState'] = get_viewstate_id(report_page)
 
         debug_form(form)
       end.submit
@@ -190,6 +191,12 @@ module ItunesConnect
       raise "could not determine form AJAX id" unless ajax_id
       ajax_id
     end
+
+    def get_viewstate_id(page)
+      view_state = page.body.match(/id="javax.faces.ViewState" value="([^\"]+)"/)[1] rescue nil
+      view_state
+    end
+
 
     # fetch main report page (sales.faces)
     def fetch_report_page 
