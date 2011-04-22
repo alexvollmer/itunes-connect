@@ -193,10 +193,9 @@ module ItunesConnect
     end
 
     def get_viewstate_id(page)
-      view_state = page.body.match(/id="javax.faces.ViewState" value="([^\"]+)"/)[1] rescue nil
+      view_state = page.search(".//input[@id='javax.faces.ViewState']")[0]['value'] rescue nil
       view_state
     end
-
 
     # fetch main report page (sales.faces)
     def fetch_report_page 
