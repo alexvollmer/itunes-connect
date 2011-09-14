@@ -105,7 +105,7 @@ module ItunesConnect
       debug_msg("options: #{options.inspect}")
 
       # constrain download to available reports
-      date_str = date ? options.find { |i| Date.parse(i) <= date } : options[0]
+      date_str = date ? options.find { |i| Date.strptime(i, '%m/%d/%Y') <= date } : options[0]
       unless date_str
         raise ArgumentError, "No #{period} reports are available for #{date_str}"
       end
