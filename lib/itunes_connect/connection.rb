@@ -242,7 +242,7 @@ module ItunesConnect
         raise("new license detected, aborting...") if self.abort_license? 
         #if acceptable continue
         debug_msg("agreement update detected, skipping")
-        next_url = page.body.match(/a href="(.*?)">\s*<img[^>]+src="\/itc\/images\/btn-continue.png"/)
+        next_url = page.body.match(/a href="(.*?)">\s*<img[^>]+src="\S+\/itc\/images\/btn-continue.png"/)
         raise "could not determine continue url" unless next_url
         continue_link = page.link_with(:href => next_url[1])
         raise "could not find continue link" unless continue_link
