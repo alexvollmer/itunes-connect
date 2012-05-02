@@ -118,7 +118,8 @@ module ItunesConnect
       # get ajax parameter name from <select> onchange attribute
       # 'parameters':{'theForm:j_id_jsp_4933398_30':'theForm:j_id_jsp_4933398_30'}
       report_date_select = @report_page.search(".//select[@id='#{@select_name}']")
-      @report_date_id = report_date_select[0]['onchange'].match(/parameters':\{'(.*?)'/)[1] rescue nil
+      @report_date_id =  period == 'Daily' ? @report_page.content.match(/function previewDataDay.*?parameters':\{'(.*?)'/)[1]:
+                                             @report_page.content.match(/function previewDataWeek.*?parameters':\{'(.*?)'/)[1];
       raise "could not determine form date AJAX parameter" unless @report_date_id
 
       # select report period to download (Weekly/Daily)
