@@ -50,11 +50,12 @@ module ItunesConnect
 
     # Create a new instance with the username and password used to sign
     # in to the iTunes Connect website
-    def initialize(username, password, verbose=false, debug=false)
+    def initialize(username, password, verbose=false, debug=false, abort_license=false)
       @username, @password = username, password
       @verbose = verbose
       @debug = debug
       @current_period = "Daily"  # default period in reportingitc interface
+      @abort_license = abort_license
     end
 
     def verbose?                # :nodoc:
@@ -63,6 +64,10 @@ module ItunesConnect
 
     def debug?                  # :nodoc:
       !!@debug
+    end
+
+    def abort_license?                  # :nodoc:
+      !!@abort_license
     end
 
     def logged_in?              # :nodoc:
@@ -80,10 +85,7 @@ module ItunesConnect
     # this method to raise an <tt>ArgumentError</tt>.
     #
     def get_report(date, out, period = 'Daily')
-      date = Date.parse(date) if String === date
-      if date >= Date.today
-        raise ArgumentError, "You must specify a date before today"
-      end
+      date = String === date ? Date.strptime(date, "%m/%d/%Y") : nil
 
       unless REPORT_PERIODS.member?(period)
         raise ArgumentError, "'period' must be one of #{REPORT_PERIODS.join(', ')}"
@@ -95,25 +97,19 @@ module ItunesConnect
       # (cache report page)
       fetch_report_page unless @report_page
 
-      # requested download date
-      date_str = date.strftime("%m/%d/%Y")
-      debug_msg("download date: #{date_str}")
-
       # determine available download options
       @select_name = period == 'Daily' ? ID_SELECT_DAILY : ID_SELECT_WEEKLY
       options = @report_page.search(".//select[@id='#{@select_name}']/option")
       options = options.collect { |i| i ? i['value'] : nil } if options
       raise "unable to determine daily report options" unless options
-
       debug_msg("options: #{options.inspect}")
 
       # constrain download to available reports
-      available = options.find { |i| i <= date_str } ? true : false
-
-      unless available
+      date_str = date ? options.find { |i| Date.strptime(i, '%m/%d/%Y') <= date } : options[0]
+      unless date_str
         raise ArgumentError, "No #{period} reports are available for #{date_str}"
       end
-
+      debug_msg("Report date: #{date_str}")
       # get ajax parameter name for Daily/Weekly (<a> id)
       report_period_link = @report_page.link_with(:text => /#{period}/)
       @report_period_id = report_period_link.node['id']
@@ -122,7 +118,8 @@ module ItunesConnect
       # get ajax parameter name from <select> onchange attribute
       # 'parameters':{'theForm:j_id_jsp_4933398_30':'theForm:j_id_jsp_4933398_30'}
       report_date_select = @report_page.search(".//select[@id='#{@select_name}']")
-      @report_date_id = report_date_select[0]['onchange'].match(/parameters':\{'(.*?)'/)[1] rescue nil
+      @report_date_id =  period == 'Daily' ? @report_page.content.match(/function previewDataDay.*?parameters':\{'(.*?)'/)[1]:
+                                             @report_page.content.match(/function previewDataWeek.*?parameters':\{'(.*?)'/)[1];
       raise "could not determine form date AJAX parameter" unless @report_date_id
 
       # select report period to download (Weekly/Daily)
@@ -181,6 +178,7 @@ module ItunesConnect
         form['AJAXREQUEST'] = @ajax_id
         form['theForm:xyz'] = 'notnormal'
         form[@select_name] = date_str
+        form['javax.faces.ViewState'] = get_viewstate_id(report_page)
 
         debug_form(form)
       end.submit
@@ -193,6 +191,11 @@ module ItunesConnect
       ajax_id = page.body.match(/AJAX\.Submit\('([^\']+)'/)[1] rescue nil
       raise "could not determine form AJAX id" unless ajax_id
       ajax_id
+    end
+
+    def get_viewstate_id(page)
+      view_state = page.search(".//input[@id='javax.faces.ViewState']")[0]['value'] rescue nil
+      view_state
     end
 
     # fetch main report page (sales.faces)
@@ -235,15 +238,16 @@ module ItunesConnect
       end
 
       # skip past new license available notifications
-      new_license = page.body.match(/License Agreement Update/)
+      new_license = page.body.match(/Agreement Update/)
       if new_license
-        debug_msg("new license detected, skipping")
-        submit_parameter = page.body.match(/input.*?type\="image".*?name="(.*?)"/)[1] rescue nil
-        raise "could not determine how to skip new license agreement" unless submit_parameter
-        page = page.form_with(:name => 'mainForm') do |form|
-          form["#{submit_parameter}.x"] = 40
-          form["#{submit_parameter}.y"] = 18
-        end.submit
+        raise("new license detected, aborting...") if self.abort_license? 
+        #if acceptable continue
+        debug_msg("agreement update detected, skipping")
+        next_url = page.body.match(/a href="(.*?)">\s*<img[^>]+src="\S+\/itc\/images\/btn-continue.png"/)
+        raise "could not determine continue url" unless next_url
+        continue_link = page.link_with(:href => next_url[1])
+        raise "could not find continue link" unless continue_link
+        page = client.click(continue_link)
       end
 
       # Click the sales and trends link
