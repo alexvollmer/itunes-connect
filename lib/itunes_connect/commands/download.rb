@@ -6,6 +6,7 @@ module ItunesConnect::Commands
     def initialize(c, rcfile=ItunesConnect::RcFile.default)
       c.opt('u', 'username', :desc => 'iTunes Connect username')
       c.opt('p', 'password', :desc => 'iTunes Connect password')
+      c.flag('l', 'abortlicense',  :desc => 'Abort when new license terms window pops up')
       c.opt('d', 'date', :desc => 'Daily report date (MM/DD/YYYY format)',
             :default => (Date.today - 1).strftime('%m/%d/%Y'))
       c.opt('o', 'out', :desc => 'Dump report to file, - is stdout')
@@ -37,18 +38,18 @@ module ItunesConnect::Commands
                                 "database because these reports have no dates " +
                                 "associated with them")
       end
-
       connection = ItunesConnect::Connection.new(username,
                                             password,
                                             opts.verbose?,
-                                            opts.debug?)
+                                            opts.debug?,
+                                            opts.abortlicense?)
       db = opts.db || @rcfile.database
       out = if opts.out.nil?
               db ? StringIO.new : $stdout
             else
               opts.out == "-" ? $stdout : File.open(opts.out, "w")
             end
-      connection.get_report(opts.date || Date.today - 1, out, opts.report)
+      connection.get_report(opts.date, out, opts.report)
 
       if db and StringIO === out
         $stdout.puts "Importing into database file: #{db}" if opts.verbose?

@@ -2,7 +2,7 @@ require "yaml"
 
 class ItunesConnect::RcFile          # :nodoc:
 
-  DEFAULT_RCFILE_PATH = File.expand_path("~/.itunesrc")
+  DEFAULT_RCFILE_PATH = File.expand_path((ENV['RC_DIR'] ? ENV['RC_DIR'] : "~") + "/.itunesrc")
 
   def self.default
     self.new(DEFAULT_RCFILE_PATH)
